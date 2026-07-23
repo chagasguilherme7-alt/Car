@@ -36,6 +36,7 @@
       --accent-electric: #0066ff;
       --accent-cyan: #00d2ff;
       --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
       --glass-bg: rgba(15,15,15,0.7);
       --glass-border: rgba(255,255,255,0.08);
       --shadow-premium: 0 30px 60px rgba(0,0,0,0.9);
@@ -151,6 +152,7 @@
     }
     .badge-blue { background: rgba(0,102,255,0.15); color: var(--accent-cyan); border: 1px solid rgba(0,102,255,0.3); }
     .badge-green { background: rgba(16,185,129,0.15); color: var(--accent-emerald); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-amber { background: rgba(245,158,11,0.15); color: var(--accent-amber); border: 1px solid rgba(245,158,11,0.3); }
     .badge-gray { background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-subtle); }
 
     /* ===== VIEW SYSTEM ===== */
@@ -195,11 +197,30 @@
       box-shadow: 0 0 10px var(--accent-electric);
     }
 
-    /* ===== TIMELINE ===== */
+    /* ===== TIMELINE AGRUPADA ===== */
+    .timeline-group {
+      margin-bottom: 32px;
+    }
+    .timeline-group-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .timeline-group-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-subtle);
+    }
     .timeline {
       position: relative;
       padding-left: 32px;
-      margin-top: 24px;
     }
     .timeline::before {
       content: '';
@@ -212,13 +233,13 @@
     }
     .timeline-node {
       position: relative;
-      margin-bottom: 32px;
+      margin-bottom: 20px;
     }
     .timeline-node::before {
       content: '';
       position: absolute;
       left: -27px;
-      top: 4px;
+      top: 18px;
       width: 12px;
       height: 12px;
       border-radius: 50%;
@@ -231,6 +252,30 @@
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
       border-radius: 12px;
+    }
+
+    /* FILTROS TIMELINE */
+    .timeline-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .chip-filter {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .chip-filter:hover, .chip-filter.active {
+      background: rgba(0,102,255,0.15);
+      color: var(--accent-cyan);
+      border-color: rgba(0,102,255,0.4);
     }
 
     /* ===== MODAL ===== */
@@ -387,6 +432,51 @@
       margin-top: 8px;
     }
 
+    /* ===== MENU DE AÇÕES RÁPIDAS (NOVO) ===== */
+    .quick-actions-menu {
+      position: relative;
+      display: inline-block;
+    }
+    .quick-actions-dropdown {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-medium);
+      border-radius: 12px;
+      padding: 8px;
+      width: 220px;
+      box-shadow: var(--shadow-premium);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .quick-actions-menu.active .quick-actions-dropdown {
+      display: flex;
+    }
+    .quick-action-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      color: var(--text-primary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      transition: var(--transition);
+    }
+    .quick-action-item:hover {
+      background: rgba(0,102,255,0.15);
+      color: var(--accent-cyan);
+    }
+
     /* ===== TABS DO PAINEL DO VEÍCULO ===== */
     .panel-tabs {
       display: flex;
@@ -420,6 +510,13 @@
       color: #fff;
       background: linear-gradient(135deg, var(--accent-electric), #0044b3);
       box-shadow: 0 4px 16px rgba(0,102,255,0.35);
+    }
+    .tab-badge {
+      background: rgba(255,255,255,0.15);
+      font-size: 0.72rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      color: #fff;
     }
     .tab-pane { display: none; animation: fadeIn 0.35s ease forwards; }
     .tab-pane.active { display: block; }
@@ -488,6 +585,29 @@
       font-size: 0.85rem;
     }
 
+    /* ===== BARRA DE PROGRESSO DE ÓLEO (NOVO) ===== */
+    .oil-progress-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .oil-progress-track {
+      height: 12px;
+      background: var(--bg-dark);
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 16px 0 10px;
+      border: 1px solid var(--border-subtle);
+    }
+    .oil-progress-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--accent-emerald), var(--accent-cyan));
+      transition: width 0.6s ease;
+    }
+
     /* ===== ÍCONE DE TIPO DE MANUTENÇÃO ===== */
     .maint-icon {
       width: 34px;
@@ -532,21 +652,21 @@
       color: #fff;
       background: linear-gradient(0deg, rgba(0,0,0,0.75), transparent);
     }
-    .photo-upload-tile {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      aspect-ratio: 4/3;
-      border-radius: 12px;
-      border: 1.5px dashed var(--border-medium);
-      color: var(--text-secondary);
+    .btn-set-cover {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid var(--border-medium);
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.7rem;
       cursor: pointer;
-      font-size: 0.8rem;
+      opacity: 0;
       transition: var(--transition);
     }
-    .photo-upload-tile:hover { border-color: var(--accent-electric); color: #fff; background: rgba(0,102,255,0.06); }
+    .photo-item:hover .btn-set-cover { opacity: 1; }
 
     /* ===== LISTA DE DOCUMENTOS ===== */
     .doc-item {
@@ -584,17 +704,6 @@
       color: var(--text-muted);
       margin-top: 2px;
     }
-    .upload-dropzone {
-      border: 1.5px dashed var(--border-medium);
-      border-radius: 14px;
-      padding: 28px;
-      text-align: center;
-      cursor: pointer;
-      transition: var(--transition);
-      margin-bottom: 24px;
-      color: var(--text-secondary);
-    }
-    .upload-dropzone:hover { border-color: var(--accent-electric); color: #fff; background: rgba(0,102,255,0.05); }
     .empty-state {
       text-align: center;
       padding: 48px 20px;
@@ -664,7 +773,7 @@
     .site-footer .footer-links span { cursor: default; }
     .site-footer .footer-links span:hover { color: var(--text-secondary); }
 
-    /* ===== TRUST BADGES (PRIMEIRO ACESSO) ===== */
+    /* ===== TRUST BADGES ===== */
     .trust-row {
       display: flex;
       gap: 22px;
@@ -689,13 +798,11 @@
 </head>
 <body>
 
-  <!-- ===== TOAST ===== -->
   <div id="toast" class="toast">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
     <span id="toast-message">Sucesso!</span>
   </div>
 
-  <!-- ===== MODAL ADICIONAR MANUTENÇÃO ===== -->
   <div id="maintenanceFormModal" class="modal-overlay">
     <div class="modal-content">
       <h3 style="font-size:1.4rem; margin-bottom:16px;">Adicionar Manutenção</h3>
@@ -710,10 +817,10 @@
           <option value="pecas">🔩 Peças / Acessórios</option>
           <option value="outro" selected>📋 Outro</option>
         </select>
-        <label>Data</label>
+        <label>Data *</label>
         <input type="text" id="mDate" placeholder="Ex: 12 Out, 2026" required />
         <label>Descrição *</label>
-        <input type="text" id="mDesc" placeholder="Troca de óleo" required />
+        <input type="text" id="mDesc" placeholder="Troca de óleo e filtro" required />
         <label>Valor (opcional)</label>
         <input type="text" id="mValue" placeholder="R$ 1.200" />
         <label>Quilometragem (opcional)</label>
@@ -728,7 +835,6 @@
     </div>
   </div>
 
-  <!-- ===== MODAL ADICIONAR DOCUMENTO ===== -->
   <div id="documentFormModal" class="modal-overlay">
     <div class="modal-content">
       <h3 style="font-size:1.4rem; margin-bottom:16px;">Anexar Documento</h3>
@@ -746,7 +852,6 @@
     </div>
   </div>
 
-  <!-- ===== MODAL ADICIONAR FOTO ===== -->
   <div id="photoFormModal" class="modal-overlay">
     <div class="modal-content">
       <h3 style="font-size:1.4rem; margin-bottom:16px;">Adicionar Foto</h3>
@@ -764,9 +869,6 @@
     </div>
   </div>
 
-  <!-- ============================================================== -->
-  <!-- ===== VIEW 1: GERADOR DE QR CODE ===== -->
-  <!-- ============================================================== -->
   <div id="view-generator" class="view-section active">
     <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; background:radial-gradient(circle at 50% 30%, rgba(0,102,255,0.18) 0%, transparent 65%);">
       <div class="logo" style="margin-bottom:20px;"><div class="logo-dot"></div> CARPASS</div>
@@ -786,9 +888,6 @@
     </div>
   </div>
 
-  <!-- ============================================================== -->
-  <!-- ===== VIEW PÚBLICA ===== -->
-  <!-- ============================================================== -->
   <div id="view-public" class="view-section">
     <div style="max-width:1000px; margin:0 auto; padding:40px 20px 80px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
@@ -799,9 +898,6 @@
     </div>
   </div>
 
-  <!-- ============================================================== -->
-  <!-- ===== VIEW: ACESSO RESTRITO (SEM QR/NFC) ===== -->
-  <!-- ============================================================== -->
   <div id="view-noaccess" class="view-section">
     <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; text-align:center; background:radial-gradient(circle at 50% 30%, rgba(0,102,255,0.14) 0%, transparent 65%);">
       <div class="logo" style="margin-bottom:28px;"><div class="logo-dot"></div> CARPASS</div>
@@ -821,7 +917,6 @@
     </div>
   </div>
 
-  <!-- ===== RODAPÉ INSTITUCIONAL ===== -->
   <footer class="site-footer">
     <div class="logo"><div class="logo-dot"></div> CARPASS</div>
     <p>© 2026 CarPass · Passaporte Digital do Veículo</p>
@@ -834,9 +929,6 @@
     </div>
   </footer>
 
-  <!-- ============================================================== -->
-  <!-- ===== JAVASCRIPT ===== -->
-  <!-- ============================================================== -->
   <script>
     (function() {
       'use strict';
@@ -965,7 +1057,7 @@
         return MAINT_TYPES[type] || MAINT_TYPES.outro;
       }
 
-      // ========== FINANCEIRO ==========
+      // ========== FINANCEIRO E KM ==========
       function parseMoneyToNumber(str) {
         if (!str) return 0;
         let cleaned = String(str).replace(/[^\d,.-]/g, '');
@@ -978,9 +1070,18 @@
         const num = parseFloat(cleaned);
         return isNaN(num) ? 0 : num;
       }
+
+      function parseKmToNumber(str) {
+        if (!str) return 0;
+        const cleaned = String(str).replace(/[^\d]/g, '');
+        const num = parseInt(cleaned, 10);
+        return isNaN(num) ? 0 : num;
+      }
+
       function formatBRL(num) {
         return (num || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
       }
+
       function computeFinancials(maintenances) {
         const list = maintenances || [];
         let total = 0;
@@ -992,6 +1093,35 @@
           byType[t] = (byType[t] || 0) + val;
         });
         return { total, byType, count: list.length };
+      }
+
+      // ========== AJUDANTE DE STATUS DO VEÍCULO (MELHORIA 1) ==========
+      function getVehicleStatus(maintenances) {
+        if (!maintenances || maintenances.length === 0) {
+          return { label: '⚠ Sem Registros', badge: 'badge-amber' };
+        }
+        
+        // Pega a manutenção mais recente tentando extrair a data
+        const sorted = [...maintenances].reverse();
+        const lastMaint = sorted[0];
+        
+        if (!lastMaint.date) {
+          return { label: '✓ Registrado', badge: 'badge-blue' };
+        }
+
+        // Tenta calcular tempo decorrido em meses
+        const lastDate = new Date(lastMaint.date);
+        if (isNaN(lastDate.getTime())) {
+          return { label: '✓ Manutenção em dia', badge: 'badge-green' };
+        }
+
+        const now = new Date();
+        const diffMonths = (now.getFullYear() - lastDate.getFullYear()) * 12 + (now.getMonth() - lastDate.getMonth());
+
+        if (diffMonths > 6) {
+          return { label: '⚠ Revisão recomendada', badge: 'badge-amber' };
+        }
+        return { label: '✓ Manutenção em dia', badge: 'badge-green' };
       }
 
       // ========== RENDER: VISÃO GERAL ==========
@@ -1049,10 +1179,121 @@
         `;
       }
 
-      // ========== RENDER: TROCA DE ÓLEO ==========
+      // ========== RENDER: TIMELINE AGRUPADA E FILTRÁVEL (MELHORIA 3) ==========
+      function renderTimelineHTML(v, filterType = 'all') {
+        let maints = v.maintenances || [];
+        
+        if (filterType !== 'all') {
+          maints = maints.filter(m => (m.type || 'outro') === filterType);
+        }
+
+        if (maints.length === 0) {
+          return `
+            <div class="glow-card" style="padding:32px;">
+              ${renderTimelineFiltersHTML(filterType)}
+              <div class="empty-state"><div class="empty-icon">📋</div><p>Nenhuma manutenção encontrada para este filtro.</p></div>
+            </div>
+          `;
+        }
+
+        // Agrupa por Mês/Ano
+        const groups = {};
+        maints.forEach(m => {
+          // Extrai mês/ano simples ou usa "Outros Registros"
+          let groupKey = "Registros";
+          if (m.date) {
+            const parts = m.date.split(' ');
+            if (parts.length >= 2) {
+              groupKey = parts.slice(-2).join(' '); // Ex: "Out, 2026" ou "2026"
+            } else {
+              groupKey = m.date;
+            }
+          }
+          if (!groups[groupKey]) groups[groupKey] = [];
+          groups[groupKey].push(m);
+        });
+
+        const groupsHTML = Object.entries(groups).map(([groupTitle, list]) => {
+          const items = list.map(m => {
+            const info = maintTypeInfo(m.type);
+            return `
+              <div class="timeline-node">
+                <div class="timeline-card">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+                    <div style="display:flex; gap:12px;">
+                      <div class="maint-icon">${info.icon}</div>
+                      <div>
+                        <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} ${m.place ? '• ' + m.place : ''}</span>
+                        <h4 style="font-size:1.1rem; font-weight:600; margin-top:4px;">${m.description}</h4>
+                        ${m.mileage ? `<span class="badge badge-gray" style="margin-top:8px;">${m.mileage}</span>` : ''}
+                      </div>
+                    </div>
+                    ${m.value ? `<span class="badge badge-blue">${m.value}</span>` : ''}
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          return `
+            <div class="timeline-group">
+              <div class="timeline-group-title">📅 ${groupTitle}</div>
+              <div class="timeline">${items}</div>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="glow-card" style="padding:32px;">
+            <h3 style="font-size:1.3rem; font-weight:700; margin-bottom:16px;">Linha do Tempo de Manutenções</h3>
+            ${renderTimelineFiltersHTML(filterType)}
+            <div>${groupsHTML}</div>
+          </div>
+        `;
+      }
+
+      function renderTimelineFiltersHTML(activeFilter) {
+        const filters = [
+          { id: 'all', label: 'Todos' },
+          { id: 'oleo', label: '🛢️ Óleo' },
+          { id: 'revisao', label: '🔧 Revisão' },
+          { id: 'reparo', label: '⚙️ Reparo' },
+          { id: 'pneus', label: '🛞 Pneus' },
+          { id: 'pecas', label: '🔩 Peças' },
+        ];
+        return `
+          <div class="timeline-filters">
+            ${filters.map(f => `<button class="chip-filter ${f.id === activeFilter ? 'active' : ''}" onclick="window.filterTimeline('${f.id}')">${f.label}</button>`).join('')}
+          </div>
+        `;
+      }
+
+      // ========== RENDER: TROCA DE ÓLEO COM BARRA DE PROGRESSO (MELHORIA 4) ==========
       function renderOilHTML(v) {
-        const oilEntries = (v.maintenances || []).filter(m => (m.type || 'outro') === 'oleo');
+        const maints = v.maintenances || [];
+        const oilEntries = maints.filter(m => (m.type || 'outro') === 'oleo');
         const last = oilEntries[oilEntries.length - 1];
+
+        // Cálculo de progresso de KM
+        let lastKm = 0;
+        let currentKm = 0;
+        
+        if (last && last.mileage) {
+          lastKm = parseKmToNumber(last.mileage);
+        }
+        
+        // Pega maior KM entre todas manutenções para calcular progresso
+        maints.forEach(m => {
+          const k = parseKmToNumber(m.mileage);
+          if (k > currentKm) currentKm = k;
+        });
+
+        const kmInterval = 10000;
+        let kmDriven = currentKm > lastKm ? (currentKm - lastKm) : 0;
+        if (kmDriven > kmInterval) kmDriven = kmInterval;
+        const pctDriven = Math.min(Math.round((kmDriven / kmInterval) * 100), 100);
+        const kmRemaining = Math.max(kmInterval - kmDriven, 0);
+
         const list = oilEntries.map(m => `
           <div class="timeline-node">
             <div class="timeline-card">
@@ -1077,12 +1318,29 @@
               <div>
                 <h3 style="font-size:1.2rem; font-weight:700;">Histórico de Troca de Óleo</h3>
                 <p style="color:var(--text-secondary); font-size:0.85rem; margin-top:4px; max-width:520px;">
-                  ${last ? `Última troca em ${last.date}${last.mileage ? ' com ' + last.mileage : ''}. Recomenda-se nova troca a cada 10.000 km ou 6 meses, o que ocorrer primeiro.` : 'Registre a primeira troca de óleo para começar a acompanhar o intervalo de manutenção.'}
+                  Intervalo recomendado de troca: a cada 10.000 km.
                 </p>
               </div>
-              <button id="addOilBtn" class="btn-primary">+ Registrar Troca de Óleo</button>
+              <button class="btn-primary trigger-add-oil">+ Registrar Troca de Óleo</button>
             </div>
+
+            ${last ? `
+              <div class="oil-progress-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
+                  <span style="font-weight:600; color:var(--text-primary);">Progresso do Óleo Atual</span>
+                  <span style="color:var(--accent-cyan); font-weight:700;">${kmDriven.toLocaleString('pt-BR')} / 10.000 km rodados</span>
+                </div>
+                <div class="oil-progress-track">
+                  <div class="oil-progress-fill" style="width: ${pctDriven}%;"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; color:var(--text-secondary);">
+                  <span>Última troca: ${last.mileage || last.date}</span>
+                  <span>Faltam aprox. <strong>${kmRemaining.toLocaleString('pt-BR')} km</strong> para a próxima troca</span>
+                </div>
+              </div>
+            ` : ''}
           </div>
+
           <div class="glow-card" style="padding:32px;">
             <div class="timeline">${list}</div>
           </div>
@@ -1106,20 +1364,21 @@
           <div class="glow-card" style="padding:32px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
               <h3 style="font-size:1.2rem; font-weight:700;">Documentos do Veículo</h3>
-              <button id="addDocBtn" class="btn-primary">+ Anexar Documento</button>
+              <button class="btn-primary trigger-add-doc">+ Anexar Documento</button>
             </div>
             ${list}
           </div>
         `;
       }
 
-      // ========== RENDER: FOTOS ==========
+      // ========== RENDER: FOTOS COM DEFINIÇÃO DE CAPA (MELHORIA 6) ==========
       function renderPhotosHTML(v) {
         const photos = v.photos || [];
         const items = photos.map(p => `
           <div class="photo-item">
             <img src="${p.url}" alt="${p.caption || 'Foto do veículo'}" loading="lazy" />
             ${p.caption ? `<div class="photo-caption">${p.caption}</div>` : ''}
+            <button class="btn-set-cover" onclick="window.setAsCover('${p.url}')">Usar como Capa</button>
           </div>
         `).join('');
 
@@ -1127,7 +1386,7 @@
           <div class="glow-card" style="padding:32px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
               <h3 style="font-size:1.2rem; font-weight:700;">Galeria de Fotos</h3>
-              <button id="addPhotoBtn" class="btn-primary">+ Adicionar Foto</button>
+              <button class="btn-primary trigger-add-photo">+ Adicionar Foto</button>
             </div>
             <div class="photo-grid">
               ${items}
@@ -1137,7 +1396,7 @@
         `;
       }
 
-      // ========== LOADER ANIMADO (CARRO ANDANDO) ==========
+      // ========== LOADER ANIMADO ==========
       function carLoaderHTML(message) {
         return `
           <div class="loader-scene">
@@ -1156,6 +1415,8 @@
       }
 
       // ========== RENDER PÁGINA PÚBLICA ==========
+      let currentVehicle = null;
+
       async function renderPublic() {
         const params = new URLSearchParams(window.location.search);
         const uuid = params.get('id');
@@ -1173,7 +1434,7 @@
         const vehicleData = await loadVehicleByUuid(uuid);
 
         // -------------------------------------------------------------
-        // CASO 1: QR Code NÃO CADASTRADO → FORMULÁRIO DE CADASTRO COM FIPE
+        // CASO 1: QR Code NÃO CADASTRADO → FORMULÁRIO DE CADASTRO
         // -------------------------------------------------------------
         if (!vehicleData) {
           let marcas = [];
@@ -1240,12 +1501,10 @@
 
           publicContent.innerHTML = formHTML;
 
-          // -------- LÓGICA DOS SELECTS --------
           const marcaSelect = $('fipeMarca');
           const modeloSelect = $('fipeModelo');
           const anoSelect = $('fipeAno');
 
-          // Carrega modelos ao mudar marca
           marcaSelect.addEventListener('change', async function() {
             const marcaId = this.value;
             if (!marcaId) {
@@ -1271,7 +1530,6 @@
             }
           });
 
-          // Carrega anos ao mudar modelo
           modeloSelect.addEventListener('change', async function() {
             const marcaId = marcaSelect.value;
             const modeloId = this.value;
@@ -1293,7 +1551,6 @@
             }
           });
 
-          // -------- SUBMIT DO FORMULÁRIO --------
           const form = $('publicVehicleForm');
           const submitBtn = $('publicSubmitBtn');
 
@@ -1304,8 +1561,6 @@
 
             const email = $('publicAuthEmail').value.trim();
             const password = $('publicAuthPassword').value.trim();
-
-            // Pegar os valores selecionados
             const marcaNome = marcaSelect.options[marcaSelect.selectedIndex]?.text || '';
             const modeloNome = modeloSelect.options[modeloSelect.selectedIndex]?.text || '';
             const anoNome = anoSelect.options[anoSelect.selectedIndex]?.text || '';
@@ -1319,24 +1574,18 @@
 
             try {
               let userId = null;
-
-              // 1. Tenta fazer login com as credenciais fornecidas
-              const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+              const { data: signInData } = await supabase.auth.signInWithPassword({ email, password });
 
               if (signInData && signInData.user) {
-                // Login bem-sucedido → usa o usuário existente
                 userId = signInData.user.id;
               } else {
-                // 2. Login falhou → tenta criar uma nova conta
                 const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
                 if (signUpError) throw new Error(signUpError.message);
                 userId = signUpData.user?.id;
-                if (!userId) throw new Error('Erro ao criar conta. Tente novamente.');
               }
 
               if (!userId) throw new Error('Não foi possível autenticar a conta.');
 
-              // 3. Insere veículo com os dados da FIPE
               const { error: insertError } = await supabase
                 .from('vehicles')
                 .insert([{
@@ -1374,54 +1623,50 @@
         // -------------------------------------------------------------
         // CASO 2: QR Code JÁ CADASTRADO → PAINEL DO VEÍCULO
         // -------------------------------------------------------------
+        currentVehicle = vehicleData;
         const v = vehicleData;
 
-        // -------- ATUALIZA TÍTULO E META TAGS (OG) --------
+        // Meta Tags
         document.title = `${v.brand} ${v.name} | CarPass`;
         $('ogTitle')?.setAttribute('content', `${v.brand} ${v.name} | Passaporte Digital CarPass`);
         $('ogDescription')?.setAttribute('content', `Histórico verificado de manutenções, documentos e fotos do ${v.brand} ${v.name}.`);
         if (v.image) $('ogImage')?.setAttribute('content', v.image);
 
-        const maintList = (v.maintenances || []).map(m => {
-          const info = maintTypeInfo(m.type);
-          return `
-            <div class="timeline-node">
-              <div class="timeline-card">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
-                  <div style="display:flex; gap:12px;">
-                    <div class="maint-icon">${info.icon}</div>
-                    <div>
-                      <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} ${m.place ? '• ' + m.place : ''}</span>
-                      <h4 style="font-size:1.1rem; font-weight:600; margin-top:4px;">${m.description}</h4>
-                      ${m.mileage ? `<span class="badge badge-gray" style="margin-top:8px;">${m.mileage}</span>` : ''}
-                    </div>
-                  </div>
-                  ${m.value ? `<span class="badge badge-blue">${m.value}</span>` : ''}
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('') || '<p style="color:var(--text-muted);">Nenhuma manutenção registrada até o momento.</p>';
+        // Dados Auxiliares para Melhorias
+        const statusInfo = getVehicleStatus(v.maintenances); // Melhoria 1
+        const shortUuid = (v.uuid || uuid).substring(0, 8).toUpperCase(); // Melhoria 2
+        const createdDate = v.created_at ? new Date(v.created_at).toLocaleDateString('pt-BR') : '2026'; // Melhoria 2
+
+        const docsCount = (v.documents || []).length; // Melhoria 7
+        const photosCount = (v.photos || []).length; // Melhoria 7
 
         publicContent.innerHTML = `
           <div class="glow-card" style="margin-bottom:32px; padding:0; overflow:hidden;">
             <div style="height:380px; width:100%; background-size:cover; background-position:center; background-image:url('${v.image || 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1600&q=80'}'); position:relative;">
               <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(5,5,5,0.2) 0%, var(--bg-card) 100%);"></div>
+              
+              <div style="position:absolute; top:24px; left:24px;" class="badge badge-gray">
+                🛡️ CARPASS-#${shortUuid} • Emitido em ${createdDate}
+              </div>
+
               <div style="position:absolute; bottom:32px; left:32px; right:32px; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;">
                 <div>
-                  <div class="badge badge-green" style="margin-bottom:12px;">✓ VEÍCULO REGISTRADO E VERIFICADO</div>
+                  <div class="badge ${statusInfo.badge}" style="margin-bottom:12px;">${statusInfo.label}</div>
                   <h1 style="font-size:2.8rem; font-weight:800; letter-spacing:-0.03em;">${v.name}</h1>
                   <p style="color:var(--text-secondary); font-size:1rem;">${v.brand} ${v.year ? '• ' + v.year : ''}</p>
                 </div>
-                <div style="display:flex; gap:12px;">
-                  <button id="addMaintBtn" class="btn-primary">+ Adicionar Manutenção</button>
+
+                <div class="quick-actions-menu" id="quickActionsMenu">
+                  <button type="button" class="btn-primary" id="quickActionsBtn">
+                    ⚡ Ações Rápidas ▾
+                  </button>
+                  <div class="quick-actions-dropdown">
+                    <button class="quick-action-item trigger-add-maint">🔧 Adicionar Manutenção</button>
+                    <button class="quick-action-item trigger-add-doc">📄 Anexar Documento</button>
+                    <button class="quick-action-item trigger-add-photo">🖼️ Adicionar Foto</button>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:1px; background:var(--border-subtle); padding-top:1px;">
-              <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">MARCA</p><p style="font-weight:700; font-size:1.1rem;">${v.brand}</p></div>
-              <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">ANO</p><p style="font-weight:700; font-size:1.1rem;">${v.year || '-'}</p></div>
-              <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">MODELO</p><p style="font-weight:700; font-size:1.1rem;">${v.name}</p></div>
             </div>
           </div>
 
@@ -1429,17 +1674,12 @@
             <button type="button" class="panel-tab active" data-tab="overview">📊 Visão Geral</button>
             <button type="button" class="panel-tab" data-tab="timeline">🕒 Timeline</button>
             <button type="button" class="panel-tab" data-tab="oil">🛢️ Troca de Óleo</button>
-            <button type="button" class="panel-tab" data-tab="docs">📄 Documentos</button>
-            <button type="button" class="panel-tab" data-tab="photos">🖼️ Fotos</button>
+            <button type="button" class="panel-tab" data-tab="docs">📄 Documentos <span class="tab-badge">${docsCount}</span></button>
+            <button type="button" class="panel-tab" data-tab="photos">🖼️ Fotos <span class="tab-badge">${photosCount}</span></button>
           </div>
 
           <div id="tab-overview" class="tab-pane active">${renderOverviewHTML(v)}</div>
-          <div id="tab-timeline" class="tab-pane">
-            <div class="glow-card" style="padding:32px;">
-              <h3 style="font-size:1.3rem; font-weight:700; margin-bottom:24px;">Linha do Tempo de Manutenções</h3>
-              <div class="timeline">${maintList}</div>
-            </div>
-          </div>
+          <div id="tab-timeline" class="tab-pane">${renderTimelineHTML(v)}</div>
           <div id="tab-oil" class="tab-pane">${renderOilHTML(v)}</div>
           <div id="tab-docs" class="tab-pane">${renderDocsHTML(v)}</div>
           <div id="tab-photos" class="tab-pane">${renderPhotosHTML(v)}</div>
@@ -1455,30 +1695,47 @@
           });
         });
 
-        $('addMaintBtn')?.addEventListener('click', () => {
-          $('maintenanceVehicleId').value = v.id;
-          $('maintenanceForm').reset();
-          $('mType').value = 'outro';
-          $('maintenanceFormModal').classList.add('active');
+        // -------- MENU DE AÇÕES RÁPIDAS (TOGGLE) --------
+        const qaMenu = $('quickActionsMenu');
+        $('quickActionsBtn')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          qaMenu.classList.toggle('active');
+        });
+        document.addEventListener('click', () => qaMenu?.classList.remove('active'));
+
+        // -------- BIND DOS TRIGGERS DE AÇÃO --------
+        document.querySelectorAll('.trigger-add-maint').forEach(el => {
+          el.onclick = () => {
+            $('maintenanceVehicleId').value = v.id;
+            $('maintenanceForm').reset();
+            $('mType').value = 'outro';
+            $('maintenanceFormModal').classList.add('active');
+          };
         });
 
-        $('addOilBtn')?.addEventListener('click', () => {
-          $('maintenanceVehicleId').value = v.id;
-          $('maintenanceForm').reset();
-          $('mType').value = 'oleo';
-          $('maintenanceFormModal').classList.add('active');
+        document.querySelectorAll('.trigger-add-oil').forEach(el => {
+          el.onclick = () => {
+            $('maintenanceVehicleId').value = v.id;
+            $('maintenanceForm').reset();
+            $('mType').value = 'oleo';
+            $('maintenanceFormModal').classList.add('active');
+          };
         });
 
-        $('addDocBtn')?.addEventListener('click', () => {
-          $('documentVehicleId').value = v.id;
-          $('documentForm').reset();
-          $('documentFormModal').classList.add('active');
+        document.querySelectorAll('.trigger-add-doc').forEach(el => {
+          el.onclick = () => {
+            $('documentVehicleId').value = v.id;
+            $('documentForm').reset();
+            $('documentFormModal').classList.add('active');
+          };
         });
 
-        $('addPhotoBtn')?.addEventListener('click', () => {
-          $('photoVehicleId').value = v.id;
-          $('photoForm').reset();
-          $('photoFormModal').classList.add('active');
+        document.querySelectorAll('.trigger-add-photo').forEach(el => {
+          el.onclick = () => {
+            $('photoVehicleId').value = v.id;
+            $('photoForm').reset();
+            $('photoFormModal').classList.add('active');
+          };
         });
 
         backToGeneratorBtn.style.display = 'inline-block';
@@ -1486,6 +1743,33 @@
           window.location.href = window.location.origin + window.location.pathname;
         };
       }
+
+      // ========== FUNÇÃO GLOBAL: FILTRAR TIMELINE (MELHORIA 3) ==========
+      window.filterTimeline = function(filterType) {
+        if (!currentVehicle) return;
+        const tab = $('tab-timeline');
+        if (tab) {
+          tab.innerHTML = renderTimelineHTML(currentVehicle, filterType);
+        }
+      };
+
+      // ========== FUNÇÃO GLOBAL: DEFINIR FOTO DE CAPA (MELHORIA 6) ==========
+      window.setAsCover = async function(photoUrl) {
+        if (!currentVehicle) return;
+        try {
+          const { error } = await supabase
+            .from('vehicles')
+            .update({ image: photoUrl })
+            .eq('id', currentVehicle.id);
+
+          if (error) throw error;
+
+          triggerToast('Foto definida como capa do veículo!');
+          renderPublic();
+        } catch (err) {
+          triggerToast('Erro ao definir foto de capa: ' + err.message, true);
+        }
+      };
 
       // ========== HANDLER MANUTENÇÃO ==========
       $('maintenanceForm').addEventListener('submit', async function(e) {
@@ -1617,8 +1901,6 @@
       });
 
       // ========== INICIALIZAÇÃO ==========
-      // Chave de acesso ao painel interno de emissão de tags.
-      // Troque este valor e use a URL: ?admin=SUACHAVE para acessar o gerador de QR Code.
       const ADMIN_KEY = 'aclive2026';
 
       function init() {
