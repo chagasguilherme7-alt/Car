@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CarPass | O Histórico Digital do Seu Veículo</title>
+  <title>CarPass | Histórico Digital do Seu Veículo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -320,13 +320,6 @@
       position: relative;
       z-index: 2;
     }
-    .vehicle-card-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-      border-top: 1px solid var(--border-subtle);
-      padding-top: 12px;
-    }
 
     /* ===== TIMELINE ===== */
     .timeline {
@@ -511,6 +504,18 @@
     .empty-state h2 { font-size: 1.8rem; font-weight: 700; }
     .empty-state p { color: var(--text-secondary); max-width: 400px; }
 
+    /* ===== QR CODE EXIBIÇÃO ===== */
+    .qr-display {
+      background: #fff;
+      padding: 20px;
+      border-radius: 16px;
+      display: inline-block;
+    }
+    .qr-display canvas {
+      display: block;
+      margin: 0 auto;
+    }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
       .sidebar { width: 70px; padding: 16px 8px; }
@@ -537,10 +542,10 @@
     <div class="modal-content text-center">
       <h3 style="font-size:1.4rem; margin-bottom:8px;">QR Code do Veículo</h3>
       <p style="color:var(--text-secondary); margin-bottom:24px; font-size:0.85rem;">Escaneie para acessar o histórico público.</p>
-      <div id="qrCodeContainer" style="background:#fff; padding:20px; border-radius:16px; display:inline-block; margin-bottom:24px;">
+      <div id="qrCodeContainer" class="qr-display">
         <canvas id="qrCanvas" width="200" height="200"></canvas>
       </div>
-      <div style="display:flex; gap:12px; justify-content:center;">
+      <div style="margin-top:16px; display:flex; gap:12px; justify-content:center;">
         <button id="copyLinkBtn" class="btn-primary">Copiar Link</button>
         <button id="closeQrBtn" class="btn-secondary">Fechar</button>
       </div>
@@ -550,7 +555,7 @@
   <!-- ===== MODAL ADICIONAR/EDITAR VEÍCULO ===== -->
   <div id="vehicleFormModal" class="modal-overlay">
     <div class="modal-content">
-      <h3 id="vehicleFormTitle" style="font-size:1.4rem; margin-bottom:16px;">Novo Veículo</h3>
+      <h3 id="vehicleFormTitle" style="font-size:1.4rem; margin-bottom:16px;">Cadastrar Veículo</h3>
       <form id="vehicleForm">
         <input type="hidden" id="editVehicleId" value="" />
         <label>Nome do Veículo *</label>
@@ -648,7 +653,7 @@
           </li>
           <li class="sidebar-item" data-view="view-vehicles">
             <svg viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 1 12.4V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
-            <span>Meus Veículos</span>
+            <span>Meu Veículo</span>
           </li>
           <li class="sidebar-item" data-view="view-timeline">
             <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -676,41 +681,39 @@
         <div class="header-bar">
           <div style="display:flex; gap:12px; align-items:center;">
             <span style="color:var(--text-secondary); font-size:0.9rem;">🔍</span>
-            <input type="text" placeholder="Buscar veículo..." id="globalSearch" style="background:transparent; border:none; outline:none; color:#fff; font-size:0.9rem; width:200px;" />
+            <input type="text" placeholder="Buscar..." id="globalSearch" style="background:transparent; border:none; outline:none; color:#fff; font-size:0.9rem; width:200px;" />
           </div>
           <div style="display:flex; gap:12px; align-items:center;">
             <button id="notifBtn" class="btn-secondary" style="padding:8px 12px;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </button>
-            <button id="addVehicleBtn" class="btn-primary">+ Novo Veículo</button>
+            <button id="addVehicleBtn" class="btn-primary">+ Cadastrar Veículo</button>
           </div>
         </div>
 
         <!-- ===== VIEW DASHBOARD ===== -->
         <div id="view-dashboard" class="app-subview">
           <h1 style="font-size:1.8rem; font-weight:700; letter-spacing:-0.02em;">Garagem Principal</h1>
-          <p style="color:var(--text-secondary); margin-bottom:28px;">Visão geral da sua frota.</p>
+          <p style="color:var(--text-secondary); margin-bottom:28px;">Acompanhe os dados do seu veículo.</p>
           <div id="dashboardContent"></div>
         </div>
 
-        <!-- ===== VIEW MEUS VEÍCULOS ===== -->
+        <!-- ===== VIEW MEU VEÍCULO (único) ===== -->
         <div id="view-vehicles" class="app-subview" style="display:none;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;">
-            <div><h1 style="font-size:1.8rem; font-weight:700;">Meus Veículos</h1><p style="color:var(--text-secondary);">Gerencie sua frota.</p></div>
-            <button id="addVehicleBtn2" class="btn-primary">+ Adicionar Veículo</button>
+            <div><h1 style="font-size:1.8rem; font-weight:700;">Meu Veículo</h1><p style="color:var(--text-secondary);">Gerencie as informações do seu carro.</p></div>
+            <div style="display:flex; gap:8px;">
+              <button id="qrGenBtn" class="btn-primary">📱 Gerar QR Code</button>
+              <button id="editVehicleBtn" class="btn-secondary">✎ Editar</button>
+            </div>
           </div>
-          <div class="vehicle-grid" id="vehicleGrid"></div>
-        </div>
-
-        <!-- ===== VIEW DETALHE DO VEÍCULO ===== -->
-        <div id="view-vehicle-detail" class="app-subview" style="display:none;">
           <div id="vehicleDetailContainer"></div>
         </div>
 
         <!-- ===== VIEW TIMELINE GERAL ===== -->
         <div id="view-timeline" class="app-subview" style="display:none;">
-          <h1 style="font-size:1.8rem; font-weight:700;">Linha do Tempo Geral</h1>
-          <p style="color:var(--text-secondary); margin-bottom:28px;">Histórico unificado de todas as manutenções.</p>
+          <h1 style="font-size:1.8rem; font-weight:700;">Linha do Tempo</h1>
+          <p style="color:var(--text-secondary); margin-bottom:28px;">Histórico de manutenções do seu veículo.</p>
           <div class="glow-card" style="padding:32px;">
             <div id="globalTimeline" class="timeline"></div>
           </div>
@@ -723,11 +726,11 @@
           <div class="doc-grid" id="docGrid">
             <div class="glow-card doc-card" data-doc="crlv">
               <div class="doc-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
-              <div><h4 style="font-size:0.95rem; font-weight:600;">CRLV Digital 2026</h4><p style="color:var(--text-muted); font-size:0.8rem;">Porsche 911 GT3 RS</p></div>
+              <div><h4 style="font-size:0.95rem; font-weight:600;">CRLV Digital 2026</h4><p style="color:var(--text-muted); font-size:0.8rem;">Seu veículo</p></div>
             </div>
             <div class="glow-card doc-card" data-doc="nf">
               <div class="doc-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
-              <div><h4 style="font-size:0.95rem; font-weight:600;">NF Escapamento Akrapovič</h4><p style="color:var(--text-muted); font-size:0.8rem;">BMW M3 Competition</p></div>
+              <div><h4 style="font-size:0.95rem; font-weight:600;">NF Peças</h4><p style="color:var(--text-muted); font-size:0.8rem;">Últimas aquisições</p></div>
             </div>
           </div>
         </div>
@@ -736,17 +739,17 @@
   </div>
 
   <!-- ============================================================== -->
-  <!-- ===== VIEW PÚBLICA (dinâmica) ===== -->
+  <!-- ===== VIEW PÚBLICA (baseada em user_id) ===== -->
   <!-- ============================================================== -->
   <div id="view-public" class="view-section">
     <div style="max-width:1000px; margin:0 auto; padding:40px 20px 80px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
         <div class="logo" id="publicLogo"><div class="logo-dot"></div> CARPASS <span style="font-size:0.75rem; color:var(--text-muted); font-weight:400; margin-left:8px;">| PRONTUÁRIO PÚBLICO</span></div>
-        <button id="backToAppBtn" class="btn-secondary">Voltar ao App</button>
+        <button id="backToAppBtn" class="btn-secondary">Voltar</button>
       </div>
       <div id="publicContent">
         <div class="glass-panel" style="padding:40px; text-align:center;">
-          <p style="color:var(--text-muted);">Nenhum veículo selecionado.</p>
+          <p style="color:var(--text-muted);">Carregando...</p>
         </div>
       </div>
     </div>
@@ -763,7 +766,6 @@
       const SUPABASE_URL = 'https://mdyzyfimlkmxyishmaao.supabase.co';
       const SUPABASE_ANON_KEY = 'sb_publishable_XeZ2g0WeeP09BVbm6C4n7w_McAyCiCF';
 
-      // ========== INICIALIZAR SUPABASE (apenas uma vez) ==========
       let supabase;
       if (window._supabaseClient) {
         supabase = window._supabaseClient;
@@ -774,7 +776,7 @@
 
       // ========== ESTADO ==========
       let currentUser = null;
-      let vehicles = [];
+      let vehicles = []; // sempre terá no máximo 1
       let currentView = 'view-auth';
       let isLoginMode = true;
 
@@ -810,7 +812,7 @@
           toggleAuthBtn.textContent = 'Criar conta';
         } else {
           authTitle.textContent = 'Crie sua conta';
-          authSub.textContent = 'Comece a gerenciar seus veículos';
+          authSub.textContent = 'Comece a gerenciar seu veículo';
           authButton.textContent = 'Cadastrar';
           toggleAuthBtn.textContent = 'Já tenho conta';
         }
@@ -855,7 +857,7 @@
           .from('vehicles')
           .select('*')
           .eq('user_id', currentUser.id)
-          .order('created_at', { ascending: false });
+          .limit(1); // força um único
 
         if (error) {
           console.error('Erro ao carregar veículos:', error);
@@ -863,7 +865,9 @@
           return;
         }
         vehicles = data || [];
-        for (let v of vehicles) {
+        // Carregar manutenções do primeiro (e único)
+        if (vehicles.length > 0) {
+          const v = vehicles[0];
           const { data: maintData } = await supabase
             .from('maintenances')
             .select('*')
@@ -883,10 +887,32 @@
           avatar.textContent = currentUser.email.charAt(0).toUpperCase();
           nameEl.textContent = currentUser.email.split('@')[0];
         }
-        if (vehicles.length === 0) renderEmptyDashboard();
-        else renderDashboard();
-        renderVehicles();
+        if (vehicles.length === 0) {
+          renderEmptyDashboard();
+        } else {
+          renderDashboard();
+        }
+        renderVehicleDetail(); // exibe o veículo único
+        renderGlobalTimeline();
         switchView('view-dashboard');
+        updateUIForSingleVehicle();
+      }
+
+      // ========== ATUALIZAR UI PARA UM VEÍCULO ==========
+      function updateUIForSingleVehicle() {
+        const hasVehicle = vehicles.length > 0;
+        const addBtn = $('addVehicleBtn');
+        const editBtn = $('editVehicleBtn');
+        const qrBtn = $('qrGenBtn');
+        if (hasVehicle) {
+          addBtn.style.display = 'none';
+          editBtn.style.display = 'inline-flex';
+          qrBtn.style.display = 'inline-flex';
+        } else {
+          addBtn.style.display = 'inline-flex';
+          editBtn.style.display = 'none';
+          qrBtn.style.display = 'none';
+        }
       }
 
       // ========== RENDER EMPTY DASHBOARD ==========
@@ -899,9 +925,9 @@
                 <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 1 12.4V16c0 .6.4 1 1 1h2"/>
                 <circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
               </svg>
-              <h2>Bem-vindo ao CarPass!</h2>
-              <p>Parece que você ainda não cadastrou nenhum veículo. Comece agora mesmo.</p>
-              <button id="emptyAddBtn" class="btn-primary">Adicionar meu primeiro veículo</button>
+              <h2>Cadastre seu veículo</h2>
+              <p>Nenhum veículo encontrado. Cadastre o seu carro para começar a usar o CarPass.</p>
+              <button id="emptyAddBtn" class="btn-primary">Cadastrar veículo</button>
             </div>
           </div>
         `;
@@ -912,30 +938,21 @@
       function renderDashboard() {
         const container = $('dashboardContent');
         if (vehicles.length === 0) { renderEmptyDashboard(); return; }
-        const total = vehicles.length;
-        const totalMaintenance = vehicles.reduce((acc, v) => acc + (v.maintenance ? v.maintenance.length : 0), 0);
-        const totalValue = vehicles.reduce((acc, v) => {
-          return acc + (v.maintenance || []).reduce((s, m) => {
-            const num = parseFloat(m.value?.replace(/[^0-9,.]/g, '').replace(',', '.'));
-            return s + (isNaN(num) ? 0 : num);
-          }, 0);
+        const v = vehicles[0];
+        const totalMaintenance = (v.maintenance ? v.maintenance.length : 0);
+        const totalValue = (v.maintenance || []).reduce((s, m) => {
+          const num = parseFloat(m.value?.replace(/[^0-9,.]/g, '').replace(',', '.'));
+          return s + (isNaN(num) ? 0 : num);
         }, 0);
 
-        const allMaint = [];
-        vehicles.forEach(v => {
-          (v.maintenance || []).forEach(m => {
-            allMaint.push({ ...m, vehicleName: v.name });
-          });
-        });
-        allMaint.sort((a, b) => new Date(b.date) - new Date(a.date));
-        const recent = allMaint.slice(0, 3);
+        const recent = (v.maintenance || []).slice(0, 3);
 
         container.innerHTML = `
           <div class="stats-grid">
-            <div class="glow-card stat-card"><span class="label">Veículos</span><div class="value">${total}</div><div class="subtext">Todos ativos</div></div>
+            <div class="glow-card stat-card"><span class="label">Veículo</span><div class="value">${v.name}</div><div class="subtext">${v.brand}</div></div>
             <div class="glow-card stat-card"><span class="label">Manutenções</span><div class="value">${totalMaintenance}</div><div class="subtext">Registros salvos</div></div>
             <div class="glow-card stat-card"><span class="label">Investimento Total</span><div class="value">R$ ${totalValue.toFixed(2).replace('.', ',')}</div><div class="subtext">Valorização garantida</div></div>
-            <div class="glow-card stat-card"><span class="label">Próxima Revisão</span><div class="value" style="font-size:1.4rem;">${recent.length > 0 ? 'Em breve' : '—'}</div><div class="subtext" style="color:var(--text-secondary);">${recent.length > 0 ? 'Consulte seus veículos' : 'Sem manutenções'}</div></div>
+            <div class="glow-card stat-card"><span class="label">Próxima Revisão</span><div class="value" style="font-size:1.4rem;">${recent.length > 0 ? 'Em breve' : '—'}</div><div class="subtext" style="color:var(--text-secondary);">${recent.length > 0 ? 'Consulte a timeline' : 'Sem manutenções'}</div></div>
           </div>
           <div style="display:grid; grid-template-columns:2fr 1fr; gap:24px; margin-bottom:32px;">
             <div class="glow-card" style="padding:24px;">
@@ -948,7 +965,7 @@
                 recent.map(m => `
                   <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
                     <div style="width:10px; height:10px; border-radius:50%; background:var(--accent-emerald);"></div>
-                    <div><p style="font-weight:600; font-size:0.85rem;">${m.desc}</p><p style="color:var(--text-muted); font-size:0.75rem;">${m.vehicleName} • ${m.date}</p></div>
+                    <div><p style="font-weight:600; font-size:0.85rem;">${m.desc}</p><p style="color:var(--text-muted); font-size:0.75rem;">${m.date}</p></div>
                   </div>
                 `).join('')
               }
@@ -957,150 +974,19 @@
         `;
       }
 
-      // ========== RENDER VEHICLES ==========
-      function renderVehicles(filter = '') {
-        const grid = $('vehicleGrid');
-        const filtered = vehicles.filter(v => v.name.toLowerCase().includes(filter.toLowerCase()));
-        if (filtered.length === 0) {
-          grid.innerHTML = `
-            <div class="glow-card" style="padding:40px; text-align:center; grid-column:1/-1;">
-              <p style="color:var(--text-muted);">Nenhum veículo encontrado.</p>
-              <button class="btn-primary" style="margin-top:16px;" onclick="openVehicleForm()">Adicionar Veículo</button>
+      // ========== RENDER DETALHE DO VEÍCULO (único) ==========
+      function renderVehicleDetail() {
+        const container = $('vehicleDetailContainer');
+        if (vehicles.length === 0) {
+          container.innerHTML = `
+            <div class="glass-panel" style="padding:60px 20px; text-align:center;">
+              <p style="color:var(--text-muted);">Nenhum veículo cadastrado.</p>
+              <button class="btn-primary" style="margin-top:16px;" onclick="openVehicleForm()">Cadastrar agora</button>
             </div>
           `;
           return;
         }
-        grid.innerHTML = filtered.map(v => {
-          const lastMaintenance = (v.maintenance && v.maintenance.length > 0) ? v.maintenance[0].date : 'Nenhuma';
-          return `
-            <div class="glow-card vehicle-card">
-              <div class="vehicle-img-wrapper" style="background-image:url('${v.image || 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=800&q=80'}');"></div>
-              <div class="vehicle-card-content">
-                <div>
-                  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                    <h3 style="font-size:1.3rem; font-weight:700;">${v.name}</h3>
-                    <span class="badge badge-green">${v.maintenance ? v.maintenance.length : 0} registros</span>
-                  </div>
-                  <p style="color:var(--text-secondary); font-size:0.85rem; margin:4px 0 8px;">${v.brand} • ${v.year || ''} • ${v.km || ''}</p>
-                </div>
-                <div style="border-top:1px solid var(--border-subtle); padding-top:12px;">
-                  <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.8rem; color:var(--text-muted);">Última: ${lastMaintenance}</span>
-                    <div style="display:flex; gap:6px;">
-                      <button class="btn-secondary" style="padding:6px 12px; font-size:0.75rem;" data-action="view" data-id="${v.id}">Visualizar</button>
-                      <button class="btn-secondary" style="padding:6px 12px; font-size:0.75rem;" data-action="edit" data-id="${v.id}">✎</button>
-                      <button class="btn-danger" style="padding:6px 12px; font-size:0.75rem;" data-action="delete" data-id="${v.id}">✕</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
-
-        grid.querySelectorAll('[data-action]').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            const action = btn.dataset.action;
-            const id = btn.dataset.id;
-            if (action === 'view') viewVehicleDetail(id);
-            else if (action === 'edit') editVehicle(id);
-            else if (action === 'delete') deleteVehicle(id);
-          });
-        });
-      }
-
-      function filterVehicles(value) {
-        renderVehicles(value);
-      }
-
-      // ========== CRUD VEHICLES ==========
-      function openVehicleForm(id = null) {
-        $('editVehicleId').value = id || '';
-        const title = $('vehicleFormTitle');
-        if (id) {
-          const v = vehicles.find(v => v.id == id);
-          if (!v) return;
-          title.textContent = 'Editar Veículo';
-          $('vName').value = v.name || '';
-          $('vBrand').value = v.brand || '';
-          $('vYear').value = v.year || '';
-          $('vKm').value = v.km || '';
-          $('vPower').value = v.power || '';
-          $('vEngine').value = v.engine || '';
-          $('vTransmission').value = v.transmission || '';
-          $('vImage').value = v.image || '';
-        } else {
-          title.textContent = 'Novo Veículo';
-          $('vehicleForm').reset();
-        }
-        openModal('vehicleFormModal');
-      }
-
-      function editVehicle(id) { openVehicleForm(id); }
-
-      async function saveVehicle(e) {
-        e.preventDefault();
-        const id = $('editVehicleId').value;
-        const data = {
-          name: $('vName').value.trim(),
-          brand: $('vBrand').value.trim(),
-          year: $('vYear').value.trim(),
-          km: $('vKm').value.trim(),
-          power: $('vPower').value.trim(),
-          engine: $('vEngine').value.trim(),
-          transmission: $('vTransmission').value.trim(),
-          image: $('vImage').value.trim(),
-          user_id: currentUser.id,
-        };
-
-        try {
-          if (id) {
-            const { error } = await supabase
-              .from('vehicles')
-              .update(data)
-              .eq('id', id)
-              .eq('user_id', currentUser.id);
-            if (error) throw error;
-            triggerToast('Veículo atualizado!');
-          } else {
-            const { error } = await supabase
-              .from('vehicles')
-              .insert([data]);
-            if (error) throw error;
-            triggerToast('Veículo adicionado!');
-          }
-          closeModal('vehicleFormModal');
-          await loadUserData();
-          renderDashboard();
-          renderVehicles();
-        } catch (err) {
-          triggerToast('Erro: ' + err.message);
-        }
-      }
-
-      async function deleteVehicle(id) {
-        if (!confirm('Tem certeza?')) return;
-        try {
-          const { error } = await supabase
-            .from('vehicles')
-            .delete()
-            .eq('id', id)
-            .eq('user_id', currentUser.id);
-          if (error) throw error;
-          triggerToast('Veículo removido.');
-          await loadUserData();
-          renderDashboard();
-          renderVehicles();
-        } catch (err) {
-          triggerToast('Erro: ' + err.message);
-        }
-      }
-
-      // ========== VIEW VEHICLE DETAIL ==========
-      async function viewVehicleDetail(id) {
-        const v = vehicles.find(v => v.id == id);
-        if (!v) return;
-        const container = $('vehicleDetailContainer');
+        const v = vehicles[0];
         const maint = (v.maintenance || []).map(m => `
           <div class="timeline-node">
             <div class="timeline-card">
@@ -1128,8 +1014,8 @@
                   <p style="color:var(--text-secondary); font-size:1rem;">${v.brand} • ${v.year || ''} • ${v.km || ''}</p>
                 </div>
                 <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                  <button class="btn-secondary" id="shareBtn">Compartilhar</button>
-                  <button class="btn-primary" id="qrBtn" data-id="${v.id}">QR Code / NFC</button>
+                  <button id="shareBtn" class="btn-secondary">Compartilhar</button>
+                  <button id="qrBtn" class="btn-primary" data-id="${v.id}">QR Code / NFC</button>
                 </div>
               </div>
             </div>
@@ -1146,20 +1032,103 @@
           <div class="glow-card" style="padding:32px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
               <h3 style="font-size:1.3rem; font-weight:700;">Linha do Tempo de Manutenções</h3>
-              <button class="btn-primary" id="addMaintBtn" data-id="${v.id}">+ Adicionar Manutenção</button>
+              <button id="addMaintBtn" class="btn-primary" data-id="${v.id}">+ Adicionar Manutenção</button>
             </div>
             <div class="timeline">${maint}</div>
           </div>
         `;
 
+        // Eventos do detalhe
         $('shareBtn').addEventListener('click', () => triggerToast('Link copiado!'));
-        $('qrBtn').addEventListener('click', () => generateQR(v.id));
+        $('qrBtn').addEventListener('click', () => generateQR(currentUser.id)); // QR com user_id
         $('addMaintBtn').addEventListener('click', () => openMaintenanceForm(v.id));
+      }
 
-        document.querySelectorAll('.app-subview').forEach(el => el.style.display = 'none');
-        $('view-vehicle-detail').style.display = 'block';
-        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-        document.querySelector('[data-view="view-vehicles"]').classList.add('active');
+      // ========== CRUD VEHICLE (único) ==========
+      function openVehicleForm(id = null) {
+        // Se já existe veículo, editar
+        const hasVehicle = vehicles.length > 0;
+        if (hasVehicle && !id) {
+          id = vehicles[0].id;
+        }
+        $('editVehicleId').value = id || '';
+        const title = $('vehicleFormTitle');
+        if (id) {
+          const v = vehicles.find(v => v.id == id);
+          if (!v) return;
+          title.textContent = 'Editar Veículo';
+          $('vName').value = v.name || '';
+          $('vBrand').value = v.brand || '';
+          $('vYear').value = v.year || '';
+          $('vKm').value = v.km || '';
+          $('vPower').value = v.power || '';
+          $('vEngine').value = v.engine || '';
+          $('vTransmission').value = v.transmission || '';
+          $('vImage').value = v.image || '';
+        } else {
+          title.textContent = 'Cadastrar Veículo';
+          $('vehicleForm').reset();
+        }
+        openModal('vehicleFormModal');
+      }
+
+      function editVehicle() {
+        if (vehicles.length === 0) {
+          openVehicleForm();
+        } else {
+          openVehicleForm(vehicles[0].id);
+        }
+      }
+
+      async function saveVehicle(e) {
+        e.preventDefault();
+        const id = $('editVehicleId').value;
+        const data = {
+          name: $('vName').value.trim(),
+          brand: $('vBrand').value.trim(),
+          year: $('vYear').value.trim(),
+          km: $('vKm').value.trim(),
+          power: $('vPower').value.trim(),
+          engine: $('vEngine').value.trim(),
+          transmission: $('vTransmission').value.trim(),
+          image: $('vImage').value.trim(),
+          user_id: currentUser.id,
+        };
+
+        try {
+          if (id) {
+            // Atualizar
+            const { error } = await supabase
+              .from('vehicles')
+              .update(data)
+              .eq('id', id)
+              .eq('user_id', currentUser.id);
+            if (error) throw error;
+            triggerToast('Veículo atualizado!');
+          } else {
+            // Inserir – verifica se já existe (segurança extra)
+            const { count } = await supabase
+              .from('vehicles')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', currentUser.id);
+            if (count > 0) {
+              triggerToast('Você já possui um veículo cadastrado. Edite-o.');
+              return;
+            }
+            const { error } = await supabase
+              .from('vehicles')
+              .insert([data]);
+            if (error) throw error;
+            triggerToast('Veículo cadastrado!');
+          }
+          closeModal('vehicleFormModal');
+          await loadUserData();
+          renderDashboard();
+          renderVehicleDetail();
+          updateUIForSingleVehicle();
+        } catch (err) {
+          triggerToast('Erro: ' + err.message);
+        }
       }
 
       // ========== MAINTENANCE ==========
@@ -1191,11 +1160,9 @@
           triggerToast('Manutenção adicionada!');
           closeModal('maintenanceFormModal');
           await loadUserData();
-          if ($('view-vehicle-detail').style.display !== 'none') {
-            viewVehicleDetail(vehicleId);
-          }
           renderDashboard();
-          renderVehicles();
+          renderVehicleDetail();
+          renderGlobalTimeline();
         } catch (err) {
           triggerToast('Erro: ' + err.message);
         }
@@ -1204,12 +1171,12 @@
       // ========== GLOBAL TIMELINE ==========
       function renderGlobalTimeline() {
         const container = $('globalTimeline');
-        const all = [];
-        vehicles.forEach(v => {
-          (v.maintenance || []).forEach(m => {
-            all.push({ ...m, vehicleName: v.name });
-          });
-        });
+        if (vehicles.length === 0) {
+          container.innerHTML = '<p style="color:var(--text-muted);">Nenhuma manutenção registrada.</p>';
+          return;
+        }
+        const v = vehicles[0];
+        const all = (v.maintenance || []).map(m => ({ ...m, vehicleName: v.name }));
         all.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         if (all.length === 0) {
@@ -1229,24 +1196,41 @@
         `).join('');
       }
 
-      // ========== PUBLIC VIEW ==========
-      async function renderPublic(vehicleId) {
+      // ========== PUBLIC VIEW (baseada em user_id) ==========
+      async function renderPublic(userId) {
         const container = $('publicContent');
-        if (!vehicleId) {
-          container.innerHTML = '<div class="glass-panel" style="padding:40px; text-align:center;"><p style="color:var(--text-muted);">Veículo não encontrado.</p></div>';
+        if (!userId) {
+          container.innerHTML = '<div class="glass-panel" style="padding:40px; text-align:center;"><p style="color:var(--text-muted);">Usuário não identificado.</p></div>';
           return;
         }
+
+        // Buscar veículo pelo user_id
         const { data: v, error } = await supabase
           .from('vehicles')
           .select('*, maintenances(*)')
-          .eq('id', vehicleId)
+          .eq('user_id', userId)
+          .limit(1)
           .single();
 
         if (error || !v) {
-          container.innerHTML = '<div class="glass-panel" style="padding:40px; text-align:center;"><p style="color:var(--text-muted);">Veículo não encontrado.</p></div>';
+          // Nenhum veículo encontrado – mostrar convite para cadastrar
+          container.innerHTML = `
+            <div class="glass-panel" style="padding:60px 20px; text-align:center;">
+              <div style="max-width:400px; margin:0 auto;">
+                <svg width="80" height="80" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="margin-bottom:20px;">
+                  <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 1 12.4V16c0 .6.4 1 1 1h2"/>
+                  <circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
+                </svg>
+                <h2 style="font-size:1.8rem; font-weight:700; margin-bottom:8px;">Nenhum veículo cadastrado</h2>
+                <p style="color:var(--text-secondary); margin-bottom:24px;">Este usuário ainda não cadastrou seu veículo. Para começar, acesse o app e cadastre seu carro.</p>
+                <a href="${window.location.origin}" class="btn-primary" style="display:inline-block;">Acessar o CarPass</a>
+              </div>
+            </div>
+          `;
           return;
         }
 
+        // Veículo encontrado – exibir
         const maint = (v.maintenances || []).map(m => `
           <div class="timeline-node">
             <div class="timeline-card">
@@ -1292,9 +1276,9 @@
         `;
       }
 
-      // ========== QR CODE ==========
-      function generateQR(vehicleId) {
-        const url = window.location.href.split('?')[0] + '?id=' + vehicleId;
+      // ========== QR CODE (agora com user_id) ==========
+      function generateQR(userId) {
+        const url = window.location.href.split('?')[0] + '?user_id=' + userId;
         const canvas = $('qrCanvas');
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, 200, 200);
@@ -1331,7 +1315,6 @@
         const map = {
           'view-dashboard': 'view-dashboard',
           'view-vehicles': 'view-vehicles',
-          'view-vehicle-detail': 'view-vehicle-detail',
           'view-timeline': 'view-timeline',
           'view-documents': 'view-documents',
         };
@@ -1342,7 +1325,6 @@
           const navMap = {
             'view-dashboard': 'view-dashboard',
             'view-vehicles': 'view-vehicles',
-            'view-vehicle-detail': 'view-vehicles',
             'view-timeline': 'view-timeline',
             'view-documents': 'view-documents',
           };
@@ -1350,7 +1332,7 @@
           if (navId) document.querySelector(`[data-view="${navId}"]`).classList.add('active');
 
           if (viewId === 'view-dashboard') renderDashboard();
-          else if (viewId === 'view-vehicles') renderVehicles();
+          else if (viewId === 'view-vehicles') renderVehicleDetail();
           else if (viewId === 'view-timeline') renderGlobalTimeline();
         }
       }
@@ -1398,9 +1380,12 @@
         $('maintenanceForm').addEventListener('submit', addMaintenance);
         $('cancelMaintenanceBtn').addEventListener('click', () => closeModal('maintenanceFormModal'));
 
-        // Add vehicle buttons
+        // Add / Edit / QR
         $('addVehicleBtn').addEventListener('click', () => openVehicleForm());
-        $('addVehicleBtn2').addEventListener('click', () => openVehicleForm());
+        $('editVehicleBtn').addEventListener('click', editVehicle);
+        $('qrGenBtn').addEventListener('click', () => {
+          if (currentUser) generateQR(currentUser.id);
+        });
 
         // Logout
         $('logoutBtn').addEventListener('click', logout);
@@ -1416,14 +1401,24 @@
         // Notifications
         $('notifBtn').addEventListener('click', () => triggerToast('Sem novas notificações'));
 
-        // Search
-        $('globalSearch').addEventListener('input', (e) => filterVehicles(e.target.value));
+        // Search (apenas visual)
+        $('globalSearch').addEventListener('input', (e) => {
+          const term = e.target.value.toLowerCase();
+          if (vehicles.length > 0) {
+            const v = vehicles[0];
+            if (v.name.toLowerCase().includes(term) || v.brand.toLowerCase().includes(term)) {
+              // mostra normal
+            } else {
+              // sem destaque
+            }
+          }
+        });
 
         // QR modal
         $('copyLinkBtn').addEventListener('click', copyPublicLink);
         $('closeQrBtn').addEventListener('click', () => closeModal('qrModal'));
 
-        // Back to app
+        // Back to app from public
         $('backToAppBtn').addEventListener('click', () => {
           if (currentUser) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
@@ -1468,13 +1463,13 @@
           }
         });
 
-        // Public view via URL
+        // Public view via URL (?user_id=...)
         const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-        if (id) {
+        const userId = params.get('user_id');
+        if (userId) {
           document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
           $('view-public').classList.add('active');
-          renderPublic(id);
+          renderPublic(userId);
         }
       }
 
@@ -1485,16 +1480,13 @@
         init();
       }
 
-      // ========== EXPOR PARA GLOBAL (para onclick) ==========
+      // ========== EXPOR GLOBAIS ==========
       window.openVehicleForm = openVehicleForm;
       window.editVehicle = editVehicle;
-      window.deleteVehicle = deleteVehicle;
-      window.viewVehicleDetail = viewVehicleDetail;
       window.openMaintenanceForm = openMaintenanceForm;
       window.generateQR = generateQR;
       window.triggerToast = triggerToast;
       window.switchView = switchView;
-      window.filterVehicles = filterVehicles;
       window.toggleAuthMode = toggleAuthMode;
 
     })();
