@@ -303,7 +303,7 @@
     }
     .toast.show { transform: translateY(0); opacity: 1; }
 
-    /* ===== QR CODE EXIBIÇÃO ===== */
+    /* ===== QR CODE ===== */
     .qr-display {
       background: #fff;
       padding: 20px;
@@ -317,7 +317,7 @@
       margin: 0 auto;
     }
 
-    /* ===== FORMULÁRIO ESTILIZADO ===== */
+    /* ===== FORMULÁRIO ===== */
     .form-card {
       max-width: 520px;
       margin: 0 auto;
@@ -368,31 +368,6 @@
     .form-group select:disabled {
       opacity: 0.4;
       cursor: not-allowed;
-    }
-    .fipe-preview {
-      background: var(--bg-surface);
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-top: 12px;
-      border: 1px solid var(--border-subtle);
-      display: none;
-      animation: fadeIn 0.3s ease;
-    }
-    .fipe-preview.visible {
-      display: block;
-    }
-    .fipe-preview .preview-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 4px 0;
-      font-size: 0.9rem;
-    }
-    .fipe-preview .preview-item span:first-child {
-      color: var(--text-muted);
-    }
-    .fipe-preview .preview-item span:last-child {
-      color: var(--text-primary);
-      font-weight: 500;
     }
     .divider {
       border: none;
@@ -627,7 +602,7 @@
           const formHTML = `
             <div class="form-card">
               <h2>Primeiro Acesso</h2>
-              <p class="subtitle">Este QR Code ainda não está vinculado a um veículo. Selecione os dados na FIPE e informe seu e-mail.</p>
+              <p class="subtitle">Este QR Code ainda não está vinculado a um veículo. Selecione os dados do veículo na FIPE e informe seu e-mail.</p>
 
               <form id="publicVehicleForm">
                 <div class="form-group">
@@ -661,13 +636,6 @@
                   </select>
                 </div>
 
-                <!-- Preview automático (inicialmente oculto) -->
-                <div id="fipePreview" class="fipe-preview">
-                  <div class="preview-item"><span>Veículo</span><span id="previewName">—</span></div>
-                  <div class="preview-item"><span>Marca</span><span id="previewBrand">—</span></div>
-                  <div class="preview-item"><span>Ano</span><span id="previewYear">—</span></div>
-                </div>
-
                 <button type="submit" id="publicSubmitBtn" class="btn-primary btn-submit">
                   Ativar QR Code e Cadastrar
                 </button>
@@ -677,29 +645,10 @@
 
           publicContent.innerHTML = formHTML;
 
-          // -------- LÓGICA DOS SELECTS COM PREVIEW AUTOMÁTICO --------
+          // -------- LÓGICA DOS SELECTS --------
           const marcaSelect = $('fipeMarca');
           const modeloSelect = $('fipeModelo');
           const anoSelect = $('fipeAno');
-          const previewDiv = $('fipePreview');
-          const previewName = $('previewName');
-          const previewBrand = $('previewBrand');
-          const previewYear = $('previewYear');
-
-          let selectedMarcaNome = '';
-          let selectedModeloNome = '';
-          let selectedAnoNome = '';
-
-          function updatePreview() {
-            if (selectedMarcaNome && selectedModeloNome && selectedAnoNome) {
-              previewName.textContent = selectedModeloNome;
-              previewBrand.textContent = selectedMarcaNome;
-              previewYear.textContent = selectedAnoNome;
-              previewDiv.classList.add('visible');
-            } else {
-              previewDiv.classList.remove('visible');
-            }
-          }
 
           // Carrega modelos ao mudar marca
           marcaSelect.addEventListener('change', async function() {
@@ -709,13 +658,8 @@
               modeloSelect.disabled = true;
               anoSelect.innerHTML = '<option value="">Selecione o modelo primeiro</option>';
               anoSelect.disabled = true;
-              selectedMarcaNome = '';
-              selectedModeloNome = '';
-              selectedAnoNome = '';
-              updatePreview();
               return;
             }
-            selectedMarcaNome = this.options[this.selectedIndex].text;
             modeloSelect.disabled = true;
             modeloSelect.innerHTML = '<option value="">Carregando modelos...</option>';
             try {
@@ -726,9 +670,6 @@
               modeloSelect.disabled = false;
               anoSelect.innerHTML = '<option value="">Selecione o modelo primeiro</option>';
               anoSelect.disabled = true;
-              selectedModeloNome = '';
-              selectedAnoNome = '';
-              updatePreview();
             } catch {
               modeloSelect.innerHTML = '<option value="">Erro ao carregar</option>';
               modeloSelect.disabled = true;
@@ -742,12 +683,8 @@
             if (!marcaId || !modeloId) {
               anoSelect.innerHTML = '<option value="">Selecione o modelo primeiro</option>';
               anoSelect.disabled = true;
-              selectedModeloNome = '';
-              selectedAnoNome = '';
-              updatePreview();
               return;
             }
-            selectedModeloNome = this.options[this.selectedIndex].text;
             anoSelect.disabled = true;
             anoSelect.innerHTML = '<option value="">Carregando anos...</option>';
             try {
@@ -755,22 +692,9 @@
               anoSelect.innerHTML = '<option value="">Selecione o ano</option>' +
                 anos.map(a => `<option value="${a.codigo}">${a.nome}</option>`).join('');
               anoSelect.disabled = false;
-              selectedAnoNome = '';
-              updatePreview();
             } catch {
               anoSelect.innerHTML = '<option value="">Erro ao carregar</option>';
               anoSelect.disabled = true;
-            }
-          });
-
-          // Ao selecionar o ano, atualiza o preview
-          anoSelect.addEventListener('change', function() {
-            if (this.value) {
-              selectedAnoNome = this.options[this.selectedIndex].text;
-              updatePreview();
-            } else {
-              selectedAnoNome = '';
-              updatePreview();
             }
           });
 
@@ -786,12 +710,12 @@
             const email = $('publicAuthEmail').value.trim();
             const password = $('publicAuthPassword').value.trim();
 
-            // Pega os dados do preview (já preenchidos)
-            const name = previewName.textContent !== '—' ? previewName.textContent : '';
-            const brand = previewBrand.textContent !== '—' ? previewBrand.textContent : '';
-            const year = previewYear.textContent !== '—' ? previewYear.textContent : '';
+            // Pegar os valores selecionados
+            const marcaNome = marcaSelect.options[marcaSelect.selectedIndex]?.text || '';
+            const modeloNome = modeloSelect.options[modeloSelect.selectedIndex]?.text || '';
+            const anoNome = anoSelect.options[anoSelect.selectedIndex]?.text || '';
 
-            if (!email || !password || !name || !brand) {
+            if (!email || !password || !marcaNome || !modeloNome || !anoNome) {
               triggerToast('Preencha todos os campos obrigatórios.', true);
               submitBtn.disabled = false;
               submitBtn.textContent = 'Ativar QR Code e Cadastrar';
@@ -801,30 +725,31 @@
             try {
               let userId = null;
 
-              // 1. Tenta login com o email informado
+              // 1. Tenta fazer login com as credenciais fornecidas
               const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+
               if (signInData && signInData.user) {
+                // Login bem-sucedido → usa o usuário existente
                 userId = signInData.user.id;
-              } else if (signInError && signInError.message.includes('Invalid login credentials')) {
-                // 2. Se falhar, tenta criar uma nova conta
+              } else {
+                // 2. Login falhou → tenta criar uma nova conta
                 const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
                 if (signUpError) throw new Error(signUpError.message);
                 userId = signUpData.user?.id;
-              } else {
-                throw new Error(signInError?.message || 'Erro ao autenticar.');
+                if (!userId) throw new Error('Erro ao criar conta. Tente novamente.');
               }
 
               if (!userId) throw new Error('Não foi possível autenticar a conta.');
 
-              // 3. Insere veículo vinculado ao UUID e ao user_id
+              // 3. Insere veículo com os dados da FIPE
               const { error: insertError } = await supabase
                 .from('vehicles')
                 .insert([{
                   uuid: uuid,
                   user_id: userId,
-                  name: name,
-                  brand: brand,
-                  year: year,
+                  name: modeloNome,
+                  brand: marcaNome,
+                  year: anoNome,
                   km: '',
                   power: '',
                   engine: '',
@@ -832,13 +757,7 @@
                   image: ''
                 }]);
 
-              if (insertError) {
-                // Se o erro for de unicidade do UUID (já existe), trata
-                if (insertError.code === '23505') {
-                  throw new Error('Este QR Code já foi cadastrado por outro usuário.');
-                }
-                throw new Error(insertError.message);
-              }
+              if (insertError) throw new Error(insertError.message);
 
               triggerToast('Veículo cadastrado e QR Code ativado com sucesso!');
               setTimeout(() => window.location.reload(), 1200);
