@@ -753,734 +753,753 @@
   </div>
 
   <!-- ============================================================== -->
-  <!-- ===== JAVASCRIPT ===== -->
+  <!-- ===== JAVASCRIPT (envolvido em IIFE) ===== -->
   <!-- ============================================================== -->
   <script>
-    // ========== CONFIGURAÇÃO SUPABASE ==========
-    const SUPABASE_URL = 'https://mdyzyfimlkmxyishmaao.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_XeZ2g0WeeP09BVbm6C4n7w_McAyCiCF';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    (function() {
+      'use strict';
 
-    // ========== ESTADO GLOBAL ==========
-    let currentUser = null;
-    let vehicles = [];
-    let currentView = 'view-auth';
+      // ========== CONFIGURAÇÃO SUPABASE ==========
+      const SUPABASE_URL = 'https://mdyzyfimlkmxyishmaao.supabase.co';
+      const SUPABASE_ANON_KEY = 'sb_publishable_XeZ2g0WeeP09BVbm6C4n7w_McAyCiCF';
 
-    // ========== DOM REFS ==========
-    const $ = id => document.getElementById(id);
-    const authView = $('view-auth');
-    const appContainer = $('app-container');
-    const authForm = $('authForm');
-    const authEmail = $('authEmail');
-    const authPassword = $('authPassword');
-    const authButton = $('authButton');
-    const authTitle = $('authTitle');
-    const authSub = $('authSub');
-    const toggleAuthBtn = $('toggleAuthBtn');
-    const toast = $('toast');
-    const toastMsg = $('toast-message');
-
-    // ========== AUTENTICAÇÃO ==========
-    let isLoginMode = true;
-
-    function toggleAuthMode() {
-      isLoginMode = !isLoginMode;
-      if (isLoginMode) {
-        authTitle.textContent = 'Bem-vindo';
-        authSub.textContent = 'Faça login ou crie sua conta';
-        authButton.textContent = 'Entrar';
-        toggleAuthBtn.textContent = 'Criar conta';
+      // Evita recriar o cliente se já existir
+      let supabaseClient;
+      if (window._supabaseClient) {
+        supabaseClient = window._supabaseClient;
       } else {
-        authTitle.textContent = 'Crie sua conta';
-        authSub.textContent = 'Comece a gerenciar seus veículos';
-        authButton.textContent = 'Cadastrar';
-        toggleAuthBtn.textContent = 'Já tenho conta';
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window._supabaseClient = supabaseClient; // guarda para reuso
       }
-    }
+      const supabase = supabaseClient;
 
-    async function handleAuth(e) {
-      e.preventDefault();
-      const email = authEmail.value;
-      const password = authPassword.value;
-      authButton.disabled = true;
-      authButton.textContent = 'Carregando...';
+      // ========== ESTADO GLOBAL ==========
+      let currentUser = null;
+      let vehicles = [];
+      let currentView = 'view-auth';
 
-      try {
-        let result;
+      // ========== DOM REFS ==========
+      const $ = id => document.getElementById(id);
+      const authView = $('view-auth');
+      const appContainer = $('app-container');
+      const authForm = $('authForm');
+      const authEmail = $('authEmail');
+      const authPassword = $('authPassword');
+      const authButton = $('authButton');
+      const authTitle = $('authTitle');
+      const authSub = $('authSub');
+      const toggleAuthBtn = $('toggleAuthBtn');
+      const toast = $('toast');
+      const toastMsg = $('toast-message');
+
+      // ========== AUTENTICAÇÃO ==========
+      let isLoginMode = true;
+
+      function toggleAuthMode() {
+        isLoginMode = !isLoginMode;
         if (isLoginMode) {
-          result = await supabase.auth.signInWithPassword({ email, password });
-        } else {
-          result = await supabase.auth.signUp({ email, password });
-        }
-        if (result.error) throw new Error(result.error.message);
-        triggerToast(isLoginMode ? 'Login realizado!' : 'Conta criada! Faça login.');
-        if (!isLoginMode) {
-          toggleAuthMode();
-          authButton.disabled = false;
+          authTitle.textContent = 'Bem-vindo';
+          authSub.textContent = 'Faça login ou crie sua conta';
           authButton.textContent = 'Entrar';
+          toggleAuthBtn.textContent = 'Criar conta';
+        } else {
+          authTitle.textContent = 'Crie sua conta';
+          authSub.textContent = 'Comece a gerenciar seus veículos';
+          authButton.textContent = 'Cadastrar';
+          toggleAuthBtn.textContent = 'Já tenho conta';
+        }
+      }
+
+      async function handleAuth(e) {
+        e.preventDefault();
+        const email = authEmail.value;
+        const password = authPassword.value;
+        authButton.disabled = true;
+        authButton.textContent = 'Carregando...';
+
+        try {
+          let result;
+          if (isLoginMode) {
+            result = await supabase.auth.signInWithPassword({ email, password });
+          } else {
+            result = await supabase.auth.signUp({ email, password });
+          }
+          if (result.error) throw new Error(result.error.message);
+          triggerToast(isLoginMode ? 'Login realizado!' : 'Conta criada! Faça login.');
+          if (!isLoginMode) {
+            toggleAuthMode();
+            authButton.disabled = false;
+            authButton.textContent = 'Entrar';
+            return;
+          }
+          currentUser = result.data.user;
+          await loadUserData();
+          showApp();
+        } catch (err) {
+          triggerToast('Erro: ' + err.message);
+        }
+        authButton.disabled = false;
+        authButton.textContent = isLoginMode ? 'Entrar' : 'Cadastrar';
+      }
+
+      // ========== CARREGAR DADOS DO USUÁRIO ==========
+      async function loadUserData() {
+        if (!currentUser) return;
+        const { data, error } = await supabase
+          .from('vehicles')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Erro ao carregar veículos:', error);
+          triggerToast('Erro ao carregar dados.');
           return;
         }
-        currentUser = result.data.user;
-        await loadUserData();
-        showApp();
-      } catch (err) {
-        triggerToast('Erro: ' + err.message);
+        vehicles = data || [];
+        for (let v of vehicles) {
+          const { data: maintData } = await supabase
+            .from('maintenances')
+            .select('*')
+            .eq('vehicle_id', v.id)
+            .order('created_at', { ascending: false });
+          v.maintenance = maintData || [];
+        }
       }
-      authButton.disabled = false;
-      authButton.textContent = isLoginMode ? 'Entrar' : 'Cadastrar';
-    }
 
-    // ========== CARREGAR DADOS DO USUÁRIO ==========
-    async function loadUserData() {
-      if (!currentUser) return;
-      const { data, error } = await supabase
-        .from('vehicles')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Erro ao carregar veículos:', error);
-        triggerToast('Erro ao carregar dados.');
-        return;
+      // ========== MOSTRAR APP ==========
+      function showApp() {
+        authView.classList.remove('active');
+        appContainer.style.display = 'block';
+        const avatar = $('userAvatar');
+        const nameEl = $('userName');
+        if (currentUser) {
+          avatar.textContent = currentUser.email.charAt(0).toUpperCase();
+          nameEl.textContent = currentUser.email.split('@')[0];
+        }
+        if (vehicles.length === 0) renderEmptyDashboard();
+        else renderDashboard();
+        renderVehicles();
+        switchView('view-dashboard');
       }
-      vehicles = data || [];
-      for (let v of vehicles) {
-        const { data: maintData } = await supabase
-          .from('maintenances')
-          .select('*')
-          .eq('vehicle_id', v.id)
-          .order('created_at', { ascending: false });
-        v.maintenance = maintData || [];
-      }
-    }
 
-    // ========== MOSTRAR APP ==========
-    function showApp() {
-      authView.classList.remove('active');
-      appContainer.style.display = 'block';
-      const avatar = $('userAvatar');
-      const nameEl = $('userName');
-      if (currentUser) {
-        avatar.textContent = currentUser.email.charAt(0).toUpperCase();
-        nameEl.textContent = currentUser.email.split('@')[0];
-      }
-      if (vehicles.length === 0) renderEmptyDashboard();
-      else renderDashboard();
-      renderVehicles();
-      switchView('view-dashboard');
-    }
-
-    // ========== RENDER EMPTY DASHBOARD ==========
-    function renderEmptyDashboard() {
-      const container = $('dashboardContent');
-      container.innerHTML = `
-        <div class="glow-card" style="padding:60px 20px; text-align:center;">
-          <div class="empty-state">
-            <svg viewBox="0 0 24 24" stroke="currentColor">
-              <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 1 12.4V16c0 .6.4 1 1 1h2"/>
-              <circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
-            </svg>
-            <h2>Bem-vindo ao CarPass!</h2>
-            <p>Parece que você ainda não cadastrou nenhum veículo. Comece agora mesmo e tenha todo o histórico do seu carro na palma da mão.</p>
-            <button id="emptyAddBtn" class="btn-primary">Adicionar meu primeiro veículo</button>
-          </div>
-        </div>
-      `;
-      $('emptyAddBtn').addEventListener('click', () => openVehicleForm());
-    }
-
-    // ========== RENDER DASHBOARD ==========
-    function renderDashboard() {
-      const container = $('dashboardContent');
-      if (vehicles.length === 0) { renderEmptyDashboard(); return; }
-      const total = vehicles.length;
-      const totalMaintenance = vehicles.reduce((acc, v) => acc + (v.maintenance ? v.maintenance.length : 0), 0);
-      const totalValue = vehicles.reduce((acc, v) => {
-        return acc + (v.maintenance || []).reduce((s, m) => {
-          const num = parseFloat(m.value?.replace(/[^0-9,.]/g, '').replace(',', '.'));
-          return s + (isNaN(num) ? 0 : num);
-        }, 0);
-      }, 0);
-
-      const allMaint = [];
-      vehicles.forEach(v => {
-        (v.maintenance || []).forEach(m => {
-          allMaint.push({ ...m, vehicleName: v.name });
-        });
-      });
-      allMaint.sort((a, b) => new Date(b.date) - new Date(a.date));
-      const recent = allMaint.slice(0, 3);
-
-      container.innerHTML = `
-        <div class="stats-grid">
-          <div class="glow-card stat-card"><span class="label">Veículos</span><div class="value">${total}</div><div class="subtext">Todos ativos</div></div>
-          <div class="glow-card stat-card"><span class="label">Manutenções</span><div class="value">${totalMaintenance}</div><div class="subtext">Registros salvos</div></div>
-          <div class="glow-card stat-card"><span class="label">Investimento Total</span><div class="value">R$ ${totalValue.toFixed(2).replace('.', ',')}</div><div class="subtext">Valorização garantida</div></div>
-          <div class="glow-card stat-card"><span class="label">Próxima Revisão</span><div class="value" style="font-size:1.4rem;">${recent.length > 0 ? 'Em breve' : '—'}</div><div class="subtext" style="color:var(--text-secondary);">${recent.length > 0 ? 'Consulte seus veículos' : 'Sem manutenções'}</div></div>
-        </div>
-        <div style="display:grid; grid-template-columns:2fr 1fr; gap:24px; margin-bottom:32px;">
-          <div class="glow-card" style="padding:24px;">
-            <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:16px;">Histórico de Investimento</h3>
-            <div style="height:120px; background:linear-gradient(90deg, var(--accent-electric) 0%, var(--accent-cyan) 100%); border-radius:8px; opacity:0.3;"></div>
-          </div>
-          <div class="glow-card" style="padding:24px;">
-            <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:20px;">Últimas Atualizações</h3>
-            ${recent.length === 0 ? '<p style="color:var(--text-muted);">Nenhuma atividade recente.</p>' :
-              recent.map(m => `
-                <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
-                  <div style="width:10px; height:10px; border-radius:50%; background:var(--accent-emerald);"></div>
-                  <div><p style="font-weight:600; font-size:0.85rem;">${m.desc}</p><p style="color:var(--text-muted); font-size:0.75rem;">${m.vehicleName} • ${m.date}</p></div>
-                </div>
-              `).join('')
-            }
-          </div>
-        </div>
-      `;
-    }
-
-    // ========== RENDER VEHICLES ==========
-    function renderVehicles(filter = '') {
-      const grid = $('vehicleGrid');
-      const filtered = vehicles.filter(v => v.name.toLowerCase().includes(filter.toLowerCase()));
-      if (filtered.length === 0) {
-        grid.innerHTML = `
-          <div class="glow-card" style="padding:40px; text-align:center; grid-column:1/-1;">
-            <p style="color:var(--text-muted);">Nenhum veículo encontrado.</p>
-            <button class="btn-primary" style="margin-top:16px;" onclick="openVehicleForm()">Adicionar Veículo</button>
+      // ========== RENDER EMPTY DASHBOARD ==========
+      function renderEmptyDashboard() {
+        const container = $('dashboardContent');
+        container.innerHTML = `
+          <div class="glow-card" style="padding:60px 20px; text-align:center;">
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" stroke="currentColor">
+                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 1 12.4V16c0 .6.4 1 1 1h2"/>
+                <circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
+              </svg>
+              <h2>Bem-vindo ao CarPass!</h2>
+              <p>Parece que você ainda não cadastrou nenhum veículo. Comece agora mesmo e tenha todo o histórico do seu carro na palma da mão.</p>
+              <button id="emptyAddBtn" class="btn-primary">Adicionar meu primeiro veículo</button>
+            </div>
           </div>
         `;
-        return;
+        $('emptyAddBtn').addEventListener('click', () => openVehicleForm());
       }
-      grid.innerHTML = filtered.map(v => {
-        const lastMaintenance = (v.maintenance && v.maintenance.length > 0) ? v.maintenance[0].date : 'Nenhuma';
-        return `
-          <div class="glow-card vehicle-card">
-            <div class="vehicle-img-wrapper" style="background-image:url('${v.image || 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=800&q=80'}');"></div>
-            <div class="vehicle-card-content">
-              <div>
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                  <h3 style="font-size:1.3rem; font-weight:700;">${v.name}</h3>
-                  <span class="badge badge-green">${v.maintenance ? v.maintenance.length : 0} registros</span>
+
+      // ========== RENDER DASHBOARD ==========
+      function renderDashboard() {
+        const container = $('dashboardContent');
+        if (vehicles.length === 0) { renderEmptyDashboard(); return; }
+        const total = vehicles.length;
+        const totalMaintenance = vehicles.reduce((acc, v) => acc + (v.maintenance ? v.maintenance.length : 0), 0);
+        const totalValue = vehicles.reduce((acc, v) => {
+          return acc + (v.maintenance || []).reduce((s, m) => {
+            const num = parseFloat(m.value?.replace(/[^0-9,.]/g, '').replace(',', '.'));
+            return s + (isNaN(num) ? 0 : num);
+          }, 0);
+        }, 0);
+
+        const allMaint = [];
+        vehicles.forEach(v => {
+          (v.maintenance || []).forEach(m => {
+            allMaint.push({ ...m, vehicleName: v.name });
+          });
+        });
+        allMaint.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const recent = allMaint.slice(0, 3);
+
+        container.innerHTML = `
+          <div class="stats-grid">
+            <div class="glow-card stat-card"><span class="label">Veículos</span><div class="value">${total}</div><div class="subtext">Todos ativos</div></div>
+            <div class="glow-card stat-card"><span class="label">Manutenções</span><div class="value">${totalMaintenance}</div><div class="subtext">Registros salvos</div></div>
+            <div class="glow-card stat-card"><span class="label">Investimento Total</span><div class="value">R$ ${totalValue.toFixed(2).replace('.', ',')}</div><div class="subtext">Valorização garantida</div></div>
+            <div class="glow-card stat-card"><span class="label">Próxima Revisão</span><div class="value" style="font-size:1.4rem;">${recent.length > 0 ? 'Em breve' : '—'}</div><div class="subtext" style="color:var(--text-secondary);">${recent.length > 0 ? 'Consulte seus veículos' : 'Sem manutenções'}</div></div>
+          </div>
+          <div style="display:grid; grid-template-columns:2fr 1fr; gap:24px; margin-bottom:32px;">
+            <div class="glow-card" style="padding:24px;">
+              <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:16px;">Histórico de Investimento</h3>
+              <div style="height:120px; background:linear-gradient(90deg, var(--accent-electric) 0%, var(--accent-cyan) 100%); border-radius:8px; opacity:0.3;"></div>
+            </div>
+            <div class="glow-card" style="padding:24px;">
+              <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:20px;">Últimas Atualizações</h3>
+              ${recent.length === 0 ? '<p style="color:var(--text-muted);">Nenhuma atividade recente.</p>' :
+                recent.map(m => `
+                  <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+                    <div style="width:10px; height:10px; border-radius:50%; background:var(--accent-emerald);"></div>
+                    <div><p style="font-weight:600; font-size:0.85rem;">${m.desc}</p><p style="color:var(--text-muted); font-size:0.75rem;">${m.vehicleName} • ${m.date}</p></div>
+                  </div>
+                `).join('')
+              }
+            </div>
+          </div>
+        `;
+      }
+
+      // ========== RENDER VEHICLES ==========
+      function renderVehicles(filter = '') {
+        const grid = $('vehicleGrid');
+        const filtered = vehicles.filter(v => v.name.toLowerCase().includes(filter.toLowerCase()));
+        if (filtered.length === 0) {
+          grid.innerHTML = `
+            <div class="glow-card" style="padding:40px; text-align:center; grid-column:1/-1;">
+              <p style="color:var(--text-muted);">Nenhum veículo encontrado.</p>
+              <button class="btn-primary" style="margin-top:16px;" onclick="openVehicleForm()">Adicionar Veículo</button>
+            </div>
+          `;
+          return;
+        }
+        grid.innerHTML = filtered.map(v => {
+          const lastMaintenance = (v.maintenance && v.maintenance.length > 0) ? v.maintenance[0].date : 'Nenhuma';
+          return `
+            <div class="glow-card vehicle-card">
+              <div class="vehicle-img-wrapper" style="background-image:url('${v.image || 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=800&q=80'}');"></div>
+              <div class="vehicle-card-content">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <h3 style="font-size:1.3rem; font-weight:700;">${v.name}</h3>
+                    <span class="badge badge-green">${v.maintenance ? v.maintenance.length : 0} registros</span>
+                  </div>
+                  <p style="color:var(--text-secondary); font-size:0.85rem; margin:4px 0 8px;">${v.brand} • ${v.year || ''} • ${v.km || ''}</p>
                 </div>
-                <p style="color:var(--text-secondary); font-size:0.85rem; margin:4px 0 8px;">${v.brand} • ${v.year || ''} • ${v.km || ''}</p>
-              </div>
-              <div style="border-top:1px solid var(--border-subtle); padding-top:12px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span style="font-size:0.8rem; color:var(--text-muted);">Última: ${lastMaintenance}</span>
-                  <div style="display:flex; gap:6px;">
-                    <button class="btn-secondary" style="padding:6px 12px; font-size:0.75rem;" data-action="view" data-id="${v.id}">Visualizar</button>
-                    <button class="btn-secondary" style="padding:6px 12px; font-size:0.75rem;" data-action="edit" data-id="${v.id}">✎</button>
-                    <button class="btn-danger" style="padding:6px 12px; font-size:0.75rem;" data-action="delete" data-id="${v.id}">✕</button>
+                <div style="border-top:1px solid var(--border-subtle); padding-top:12px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.8rem; color:var(--text-muted);">Última: ${lastMaintenance}</span>
+                    <div style="display:flex; gap:6px;">
+                      <button class="btn-secondary" style="padding:6px 12px; font-size:0.75rem;" data-action="view" data-id="${v.id}">Visualizar</button>
+                      <button class="btn-secondary" style="padding:6px 12px; font-size:0.75rem;" data-action="edit" data-id="${v.id}">✎</button>
+                      <button class="btn-danger" style="padding:6px 12px; font-size:0.75rem;" data-action="delete" data-id="${v.id}">✕</button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        `;
-      }).join('');
+          `;
+        }).join('');
 
-      // Event delegation para os botões
-      grid.querySelectorAll('[data-action]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const action = btn.dataset.action;
-          const id = btn.dataset.id;
-          if (action === 'view') viewVehicleDetail(id);
-          else if (action === 'edit') editVehicle(id);
-          else if (action === 'delete') deleteVehicle(id);
+        // Event delegation para os botões
+        grid.querySelectorAll('[data-action]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const action = btn.dataset.action;
+            const id = btn.dataset.id;
+            if (action === 'view') viewVehicleDetail(id);
+            else if (action === 'edit') editVehicle(id);
+            else if (action === 'delete') deleteVehicle(id);
+          });
         });
-      });
-    }
-
-    function filterVehicles(value) {
-      renderVehicles(value);
-    }
-
-    // ========== CRUD VEHICLES ==========
-    function openVehicleForm(id = null) {
-      $('editVehicleId').value = id || '';
-      const title = $('vehicleFormTitle');
-      if (id) {
-        const v = vehicles.find(v => v.id == id);
-        if (!v) return;
-        title.textContent = 'Editar Veículo';
-        $('vName').value = v.name || '';
-        $('vBrand').value = v.brand || '';
-        $('vYear').value = v.year || '';
-        $('vKm').value = v.km || '';
-        $('vPower').value = v.power || '';
-        $('vEngine').value = v.engine || '';
-        $('vTransmission').value = v.transmission || '';
-        $('vImage').value = v.image || '';
-      } else {
-        title.textContent = 'Novo Veículo';
-        $('vehicleForm').reset();
       }
-      openModal('vehicleFormModal');
-    }
 
-    function editVehicle(id) { openVehicleForm(id); }
+      function filterVehicles(value) {
+        renderVehicles(value);
+      }
 
-    async function saveVehicle(e) {
-      e.preventDefault();
-      const id = $('editVehicleId').value;
-      const data = {
-        name: $('vName').value.trim(),
-        brand: $('vBrand').value.trim(),
-        year: $('vYear').value.trim(),
-        km: $('vKm').value.trim(),
-        power: $('vPower').value.trim(),
-        engine: $('vEngine').value.trim(),
-        transmission: $('vTransmission').value.trim(),
-        image: $('vImage').value.trim(),
-        user_id: currentUser.id,
-      };
-
-      try {
+      // ========== CRUD VEHICLES ==========
+      function openVehicleForm(id = null) {
+        $('editVehicleId').value = id || '';
+        const title = $('vehicleFormTitle');
         if (id) {
+          const v = vehicles.find(v => v.id == id);
+          if (!v) return;
+          title.textContent = 'Editar Veículo';
+          $('vName').value = v.name || '';
+          $('vBrand').value = v.brand || '';
+          $('vYear').value = v.year || '';
+          $('vKm').value = v.km || '';
+          $('vPower').value = v.power || '';
+          $('vEngine').value = v.engine || '';
+          $('vTransmission').value = v.transmission || '';
+          $('vImage').value = v.image || '';
+        } else {
+          title.textContent = 'Novo Veículo';
+          $('vehicleForm').reset();
+        }
+        openModal('vehicleFormModal');
+      }
+
+      function editVehicle(id) { openVehicleForm(id); }
+
+      async function saveVehicle(e) {
+        e.preventDefault();
+        const id = $('editVehicleId').value;
+        const data = {
+          name: $('vName').value.trim(),
+          brand: $('vBrand').value.trim(),
+          year: $('vYear').value.trim(),
+          km: $('vKm').value.trim(),
+          power: $('vPower').value.trim(),
+          engine: $('vEngine').value.trim(),
+          transmission: $('vTransmission').value.trim(),
+          image: $('vImage').value.trim(),
+          user_id: currentUser.id,
+        };
+
+        try {
+          if (id) {
+            const { error } = await supabase
+              .from('vehicles')
+              .update(data)
+              .eq('id', id)
+              .eq('user_id', currentUser.id);
+            if (error) throw error;
+            triggerToast('Veículo atualizado!');
+          } else {
+            const { error } = await supabase
+              .from('vehicles')
+              .insert([data]);
+            if (error) throw error;
+            triggerToast('Veículo adicionado!');
+          }
+          closeModal('vehicleFormModal');
+          await loadUserData();
+          renderDashboard();
+          renderVehicles();
+        } catch (err) {
+          triggerToast('Erro: ' + err.message);
+        }
+      }
+
+      async function deleteVehicle(id) {
+        if (!confirm('Tem certeza?')) return;
+        try {
           const { error } = await supabase
             .from('vehicles')
-            .update(data)
+            .delete()
             .eq('id', id)
             .eq('user_id', currentUser.id);
           if (error) throw error;
-          triggerToast('Veículo atualizado!');
-        } else {
+          triggerToast('Veículo removido.');
+          await loadUserData();
+          renderDashboard();
+          renderVehicles();
+        } catch (err) {
+          triggerToast('Erro: ' + err.message);
+        }
+      }
+
+      // ========== VIEW VEHICLE DETAIL ==========
+      async function viewVehicleDetail(id) {
+        const v = vehicles.find(v => v.id == id);
+        if (!v) return;
+        const container = $('vehicleDetailContainer');
+        const maint = (v.maintenance || []).map(m => `
+          <div class="timeline-node">
+            <div class="timeline-card">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                  <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} • ${m.place || ''}</span>
+                  <h4 style="font-size:1.1rem; font-weight:600; margin-top:4px;">${m.desc}</h4>
+                </div>
+                ${m.value ? `<span class="badge badge-blue">${m.value}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        `).join('') || '<p style="color:var(--text-muted);">Nenhuma manutenção registrada.</p>';
+
+        const score = Math.min(95, 60 + (v.maintenance ? v.maintenance.length * 3 : 0));
+
+        container.innerHTML = `
+          <div class="glow-card" style="margin-bottom:32px; padding:0; overflow:hidden;">
+            <div style="height:380px; width:100%; background-size:cover; background-position:center; background-image:url('${v.image || 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1600&q=80'}'); position:relative;">
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(5,5,5,0.2) 0%, var(--bg-card) 100%);"></div>
+              <div style="position:absolute; bottom:32px; left:32px; right:32px; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;">
+                <div>
+                  <div class="badge badge-blue" style="margin-bottom:12px;">PASSAPORTE VERIFICADO</div>
+                  <h1 style="font-size:2.8rem; font-weight:800; letter-spacing:-0.03em;">${v.name}</h1>
+                  <p style="color:var(--text-secondary); font-size:1rem;">${v.brand} • ${v.year || ''} • ${v.km || ''}</p>
+                </div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                  <button class="btn-secondary" id="shareBtn">Compartilhar</button>
+                  <button class="btn-primary" id="qrBtn" data-id="${v.id}">QR Code / NFC</button>
+                </div>
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(6, 1fr); gap:1px; background:var(--border-subtle); padding-top:1px;">
+              <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">MARCA</p><p style="font-weight:700; font-size:1.1rem;">${v.brand}</p></div>
+              <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">ANO</p><p style="font-weight:700; font-size:1.1rem;">${v.year || '-'}</p></div>
+              <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">MOTOR</p><p style="font-weight:700; font-size:1.1rem;">${v.engine || '-'}</p></div>
+              <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">POTÊNCIA</p><p style="font-weight:700; font-size:1.1rem;">${v.power || '-'}</p></div>
+              <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">KM</p><p style="font-weight:700; font-size:1.1rem;">${v.km || '-'}</p></div>
+              <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">STATUS</p><p style="font-weight:700; font-size:1.1rem; color:var(--accent-emerald);">${score > 80 ? 'Impecável' : 'Bom'}</p></div>
+            </div>
+          </div>
+
+          <div class="glow-card" style="padding:32px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
+              <h3 style="font-size:1.3rem; font-weight:700;">Linha do Tempo de Manutenções</h3>
+              <button class="btn-primary" id="addMaintBtn" data-id="${v.id}">+ Adicionar Manutenção</button>
+            </div>
+            <div class="timeline">${maint}</div>
+          </div>
+        `;
+
+        // Eventos do detalhe
+        $('shareBtn').addEventListener('click', () => triggerToast('Link copiado!'));
+        $('qrBtn').addEventListener('click', () => generateQR(v.id));
+        $('addMaintBtn').addEventListener('click', () => openMaintenanceForm(v.id));
+
+        // Mudar para view de detalhe
+        document.querySelectorAll('.app-subview').forEach(el => el.style.display = 'none');
+        $('view-vehicle-detail').style.display = 'block';
+        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+        document.querySelector('[data-view="view-vehicles"]').classList.add('active');
+      }
+
+      // ========== MAINTENANCE CRUD ==========
+      function openMaintenanceForm(vehicleId) {
+        $('maintenanceVehicleId').value = vehicleId;
+        $('maintenanceForm').reset();
+        openModal('maintenanceFormModal');
+      }
+
+      async function addMaintenance(e) {
+        e.preventDefault();
+        const vehicleId = $('maintenanceVehicleId').value;
+        const data = {
+          vehicle_id: parseInt(vehicleId),
+          date: $('mDate').value.trim(),
+          description: $('mDesc').value.trim(),
+          value: $('mValue').value.trim(),
+          place: $('mPlace').value.trim(),
+        };
+        if (!data.date || !data.description) {
+          triggerToast('Preencha data e descrição.');
+          return;
+        }
+        try {
           const { error } = await supabase
-            .from('vehicles')
+            .from('maintenances')
             .insert([data]);
           if (error) throw error;
-          triggerToast('Veículo adicionado!');
+          triggerToast('Manutenção adicionada!');
+          closeModal('maintenanceFormModal');
+          await loadUserData();
+          // Recarregar detalhe se estiver visível
+          if ($('view-vehicle-detail').style.display !== 'none') {
+            viewVehicleDetail(vehicleId);
+          }
+          renderDashboard();
+          renderVehicles();
+        } catch (err) {
+          triggerToast('Erro: ' + err.message);
         }
-        closeModal('vehicleFormModal');
-        await loadUserData();
-        renderDashboard();
-        renderVehicles();
-      } catch (err) {
-        triggerToast('Erro: ' + err.message);
       }
-    }
 
-    async function deleteVehicle(id) {
-      if (!confirm('Tem certeza?')) return;
-      try {
-        const { error } = await supabase
-          .from('vehicles')
-          .delete()
-          .eq('id', id)
-          .eq('user_id', currentUser.id);
-        if (error) throw error;
-        triggerToast('Veículo removido.');
-        await loadUserData();
-        renderDashboard();
-        renderVehicles();
-      } catch (err) {
-        triggerToast('Erro: ' + err.message);
-      }
-    }
+      // ========== GLOBAL TIMELINE ==========
+      function renderGlobalTimeline() {
+        const container = $('globalTimeline');
+        const all = [];
+        vehicles.forEach(v => {
+          (v.maintenance || []).forEach(m => {
+            all.push({ ...m, vehicleName: v.name });
+          });
+        });
+        all.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // ========== VIEW VEHICLE DETAIL ==========
-    async function viewVehicleDetail(id) {
-      const v = vehicles.find(v => v.id == id);
-      if (!v) return;
-      const container = $('vehicleDetailContainer');
-      const maint = (v.maintenance || []).map(m => `
-        <div class="timeline-node">
-          <div class="timeline-card">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-              <div>
-                <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} • ${m.place || ''}</span>
-                <h4 style="font-size:1.1rem; font-weight:600; margin-top:4px;">${m.desc}</h4>
-              </div>
+        if (all.length === 0) {
+          container.innerHTML = '<p style="color:var(--text-muted);">Nenhuma manutenção registrada.</p>';
+          return;
+        }
+
+        container.innerHTML = all.map(m => `
+          <div class="timeline-node">
+            <div class="timeline-card">
+              <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} • ${m.vehicleName}</span>
+              <h4 style="font-size:1.1rem; font-weight:600; margin-top:4px;">${m.desc}</h4>
+              ${m.place ? `<p style="color:var(--text-secondary); font-size:0.85rem;">${m.place}</p>` : ''}
               ${m.value ? `<span class="badge badge-blue">${m.value}</span>` : ''}
             </div>
           </div>
-        </div>
-      `).join('') || '<p style="color:var(--text-muted);">Nenhuma manutenção registrada.</p>';
-
-      const score = Math.min(95, 60 + (v.maintenance ? v.maintenance.length * 3 : 0));
-
-      container.innerHTML = `
-        <div class="glow-card" style="margin-bottom:32px; padding:0; overflow:hidden;">
-          <div style="height:380px; width:100%; background-size:cover; background-position:center; background-image:url('${v.image || 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1600&q=80'}'); position:relative;">
-            <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(5,5,5,0.2) 0%, var(--bg-card) 100%);"></div>
-            <div style="position:absolute; bottom:32px; left:32px; right:32px; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;">
-              <div>
-                <div class="badge badge-blue" style="margin-bottom:12px;">PASSAPORTE VERIFICADO</div>
-                <h1 style="font-size:2.8rem; font-weight:800; letter-spacing:-0.03em;">${v.name}</h1>
-                <p style="color:var(--text-secondary); font-size:1rem;">${v.brand} • ${v.year || ''} • ${v.km || ''}</p>
-              </div>
-              <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                <button class="btn-secondary" id="shareBtn">Compartilhar</button>
-                <button class="btn-primary" id="qrBtn" data-id="${v.id}">QR Code / NFC</button>
-              </div>
-            </div>
-          </div>
-          <div style="display:grid; grid-template-columns:repeat(6, 1fr); gap:1px; background:var(--border-subtle); padding-top:1px;">
-            <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">MARCA</p><p style="font-weight:700; font-size:1.1rem;">${v.brand}</p></div>
-            <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">ANO</p><p style="font-weight:700; font-size:1.1rem;">${v.year || '-'}</p></div>
-            <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">MOTOR</p><p style="font-weight:700; font-size:1.1rem;">${v.engine || '-'}</p></div>
-            <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">POTÊNCIA</p><p style="font-weight:700; font-size:1.1rem;">${v.power || '-'}</p></div>
-            <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">KM</p><p style="font-weight:700; font-size:1.1rem;">${v.km || '-'}</p></div>
-            <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">STATUS</p><p style="font-weight:700; font-size:1.1rem; color:var(--accent-emerald);">${score > 80 ? 'Impecável' : 'Bom'}</p></div>
-          </div>
-        </div>
-
-        <div class="glow-card" style="padding:32px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
-            <h3 style="font-size:1.3rem; font-weight:700;">Linha do Tempo de Manutenções</h3>
-            <button class="btn-primary" id="addMaintBtn" data-id="${v.id}">+ Adicionar Manutenção</button>
-          </div>
-          <div class="timeline">${maint}</div>
-        </div>
-      `;
-
-      // Eventos do detalhe
-      $('shareBtn').addEventListener('click', () => triggerToast('Link copiado!'));
-      $('qrBtn').addEventListener('click', () => generateQR(v.id));
-      $('addMaintBtn').addEventListener('click', () => openMaintenanceForm(v.id));
-
-      // Mudar para view de detalhe
-      document.querySelectorAll('.app-subview').forEach(el => el.style.display = 'none');
-      $('view-vehicle-detail').style.display = 'block';
-      document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-      document.querySelector('[data-view="view-vehicles"]').classList.add('active');
-    }
-
-    // ========== MAINTENANCE CRUD ==========
-    function openMaintenanceForm(vehicleId) {
-      $('maintenanceVehicleId').value = vehicleId;
-      $('maintenanceForm').reset();
-      openModal('maintenanceFormModal');
-    }
-
-    async function addMaintenance(e) {
-      e.preventDefault();
-      const vehicleId = $('maintenanceVehicleId').value;
-      const data = {
-        vehicle_id: parseInt(vehicleId),
-        date: $('mDate').value.trim(),
-        description: $('mDesc').value.trim(),
-        value: $('mValue').value.trim(),
-        place: $('mPlace').value.trim(),
-      };
-      if (!data.date || !data.description) {
-        triggerToast('Preencha data e descrição.');
-        return;
+        `).join('');
       }
-      try {
-        const { error } = await supabase
-          .from('maintenances')
-          .insert([data]);
-        if (error) throw error;
-        triggerToast('Manutenção adicionada!');
-        closeModal('maintenanceFormModal');
-        await loadUserData();
-        // Recarregar detalhe se estiver visível
-        if ($('view-vehicle-detail').style.display !== 'none') {
-          viewVehicleDetail(vehicleId);
+
+      // ========== PUBLIC VIEW ==========
+      async function renderPublic(vehicleId) {
+        const container = $('publicContent');
+        if (!vehicleId) {
+          container.innerHTML = '<div class="glass-panel" style="padding:40px; text-align:center;"><p style="color:var(--text-muted);">Veículo não encontrado.</p></div>';
+          return;
         }
-        renderDashboard();
-        renderVehicles();
-      } catch (err) {
-        triggerToast('Erro: ' + err.message);
-      }
-    }
+        const { data: v, error } = await supabase
+          .from('vehicles')
+          .select('*, maintenances(*)')
+          .eq('id', vehicleId)
+          .single();
 
-    // ========== GLOBAL TIMELINE ==========
-    function renderGlobalTimeline() {
-      const container = $('globalTimeline');
-      const all = [];
-      vehicles.forEach(v => {
-        (v.maintenance || []).forEach(m => {
-          all.push({ ...m, vehicleName: v.name });
-        });
-      });
-      all.sort((a, b) => new Date(b.date) - new Date(a.date));
+        if (error || !v) {
+          container.innerHTML = '<div class="glass-panel" style="padding:40px; text-align:center;"><p style="color:var(--text-muted);">Veículo não encontrado.</p></div>';
+          return;
+        }
 
-      if (all.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-muted);">Nenhuma manutenção registrada.</p>';
-        return;
-      }
-
-      container.innerHTML = all.map(m => `
-        <div class="timeline-node">
-          <div class="timeline-card">
-            <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} • ${m.vehicleName}</span>
-            <h4 style="font-size:1.1rem; font-weight:600; margin-top:4px;">${m.desc}</h4>
-            ${m.place ? `<p style="color:var(--text-secondary); font-size:0.85rem;">${m.place}</p>` : ''}
-            ${m.value ? `<span class="badge badge-blue">${m.value}</span>` : ''}
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // ========== PUBLIC VIEW ==========
-    async function renderPublic(vehicleId) {
-      const container = $('publicContent');
-      if (!vehicleId) {
-        container.innerHTML = '<div class="glass-panel" style="padding:40px; text-align:center;"><p style="color:var(--text-muted);">Veículo não encontrado.</p></div>';
-        return;
-      }
-      const { data: v, error } = await supabase
-        .from('vehicles')
-        .select('*, maintenances(*)')
-        .eq('id', vehicleId)
-        .single();
-
-      if (error || !v) {
-        container.innerHTML = '<div class="glass-panel" style="padding:40px; text-align:center;"><p style="color:var(--text-muted);">Veículo não encontrado.</p></div>';
-        return;
-      }
-
-      const maint = (v.maintenances || []).map(m => `
-        <div class="timeline-node">
-          <div class="timeline-card">
-            <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} ${m.place ? '• '+m.place : ''}</span>
-            <h4 style="font-size:1rem; font-weight:600; margin-top:4px;">${m.description}</h4>
-            ${m.value ? `<span class="badge badge-blue">${m.value}</span>` : ''}
-          </div>
-        </div>
-      `).join('') || '<p style="color:var(--text-muted);">Nenhuma manutenção registrada.</p>';
-
-      const score = Math.min(95, 60 + (v.maintenances ? v.maintenances.length * 3 : 0));
-
-      container.innerHTML = `
-        <div class="glass-panel" style="padding:40px; margin-bottom:32px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:24px;">
-          <div>
-            <div class="badge badge-green" style="margin-bottom:12px;">100% REGISTROS COMPROVADOS</div>
-            <h1 style="font-size:2.5rem; font-weight:800; letter-spacing:-0.03em;">${v.name}</h1>
-            <p style="color:var(--text-secondary); margin-top:6px;">${v.brand} • ${v.year || ''} • ${v.km || ''}</p>
-          </div>
-          <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
-            <div class="trust-circle-container">
-              <svg class="trust-circle-svg" viewBox="0 0 140 140">
-                <circle class="trust-circle-bg" cx="70" cy="70" r="60" />
-                <circle class="trust-circle-progress" cx="70" cy="70" r="60" style="stroke-dashoffset: ${377 - (score/100)*377};" />
-              </svg>
-              <div class="trust-score-text">${score}<span>/ 100</span></div>
+        const maint = (v.maintenances || []).map(m => `
+          <div class="timeline-node">
+            <div class="timeline-card">
+              <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} ${m.place ? '• '+m.place : ''}</span>
+              <h4 style="font-size:1rem; font-weight:600; margin-top:4px;">${m.description}</h4>
+              ${m.value ? `<span class="badge badge-blue">${m.value}</span>` : ''}
             </div>
-            <span style="font-size:0.8rem; color:var(--text-secondary); font-weight:600;">Índice de Confiabilidade</span>
           </div>
-        </div>
+        `).join('') || '<p style="color:var(--text-muted);">Nenhuma manutenção registrada.</p>';
 
-        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px;">
-          <div class="glow-card" style="padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">MARCA</p><p style="font-size:1.5rem; font-weight:700;">${v.brand}</p></div>
-          <div class="glow-card" style="padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">ANO</p><p style="font-size:1.5rem; font-weight:700;">${v.year || '-'}</p></div>
-          <div class="glow-card" style="padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">POTÊNCIA</p><p style="font-size:1.5rem; font-weight:700;">${v.power || '-'}</p></div>
-          <div class="glow-card" style="padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">CÂMBIO</p><p style="font-size:1.5rem; font-weight:700;">${v.transmission || '-'}</p></div>
-        </div>
+        const score = Math.min(95, 60 + (v.maintenances ? v.maintenances.length * 3 : 0));
 
-        <div class="glow-card" style="padding:32px;">
-          <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:24px;">Histórico de Manutenção Auditado</h3>
-          <div class="timeline">${maint}</div>
-        </div>
-      `;
-    }
+        container.innerHTML = `
+          <div class="glass-panel" style="padding:40px; margin-bottom:32px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:24px;">
+            <div>
+              <div class="badge badge-green" style="margin-bottom:12px;">100% REGISTROS COMPROVADOS</div>
+              <h1 style="font-size:2.5rem; font-weight:800; letter-spacing:-0.03em;">${v.name}</h1>
+              <p style="color:var(--text-secondary); margin-top:6px;">${v.brand} • ${v.year || ''} • ${v.km || ''}</p>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+              <div class="trust-circle-container">
+                <svg class="trust-circle-svg" viewBox="0 0 140 140">
+                  <circle class="trust-circle-bg" cx="70" cy="70" r="60" />
+                  <circle class="trust-circle-progress" cx="70" cy="70" r="60" style="stroke-dashoffset: ${377 - (score/100)*377};" />
+                </svg>
+                <div class="trust-score-text">${score}<span>/ 100</span></div>
+              </div>
+              <span style="font-size:0.8rem; color:var(--text-secondary); font-weight:600;">Índice de Confiabilidade</span>
+            </div>
+          </div>
 
-    // ========== QR CODE ==========
-    function generateQR(vehicleId) {
-      const url = window.location.href.split('?')[0] + '?id=' + vehicleId;
-      const canvas = $('qrCanvas');
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, 200, 200);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, 200, 200);
-      ctx.fillStyle = '#000000';
-      const size = 10;
-      for (let i=0; i<20; i++) {
-        for (let j=0; j<20; j++) {
-          if ((i+j) % 3 === 0 || (i*j) % 5 === 0) {
-            ctx.fillRect(i*size+5, j*size+5, size, size);
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px;">
+            <div class="glow-card" style="padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">MARCA</p><p style="font-size:1.5rem; font-weight:700;">${v.brand}</p></div>
+            <div class="glow-card" style="padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">ANO</p><p style="font-size:1.5rem; font-weight:700;">${v.year || '-'}</p></div>
+            <div class="glow-card" style="padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">POTÊNCIA</p><p style="font-size:1.5rem; font-weight:700;">${v.power || '-'}</p></div>
+            <div class="glow-card" style="padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">CÂMBIO</p><p style="font-size:1.5rem; font-weight:700;">${v.transmission || '-'}</p></div>
+          </div>
+
+          <div class="glow-card" style="padding:32px;">
+            <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:24px;">Histórico de Manutenção Auditado</h3>
+            <div class="timeline">${maint}</div>
+          </div>
+        `;
+      }
+
+      // ========== QR CODE ==========
+      function generateQR(vehicleId) {
+        const url = window.location.href.split('?')[0] + '?id=' + vehicleId;
+        const canvas = $('qrCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, 200, 200);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, 200, 200);
+        ctx.fillStyle = '#000000';
+        const size = 10;
+        for (let i=0; i<20; i++) {
+          for (let j=0; j<20; j++) {
+            if ((i+j) % 3 === 0 || (i*j) % 5 === 0) {
+              ctx.fillRect(i*size+5, j*size+5, size, size);
+            }
           }
         }
+        canvas.dataset.url = url;
+        openModal('qrModal');
+        triggerToast('QR Code gerado!');
       }
-      canvas.dataset.url = url;
-      openModal('qrModal');
-      triggerToast('QR Code gerado!');
-    }
 
-    function copyPublicLink() {
-      const canvas = $('qrCanvas');
-      const url = canvas.dataset.url || window.location.href;
-      navigator.clipboard?.writeText(url).then(() => {
-        triggerToast('Link copiado: ' + url);
-      }).catch(() => {
-        prompt('Copie o link:', url);
-      });
-    }
+      function copyPublicLink() {
+        const canvas = $('qrCanvas');
+        const url = canvas.dataset.url || window.location.href;
+        navigator.clipboard?.writeText(url).then(() => {
+          triggerToast('Link copiado: ' + url);
+        }).catch(() => {
+          prompt('Copie o link:', url);
+        });
+      }
 
-    // ========== VIEW SWITCHER ==========
-    function switchView(viewId) {
-      currentView = viewId;
-      document.querySelectorAll('.app-subview').forEach(el => el.style.display = 'none');
-      const map = {
-        'view-dashboard': 'view-dashboard',
-        'view-vehicles': 'view-vehicles',
-        'view-vehicle-detail': 'view-vehicle-detail',
-        'view-timeline': 'view-timeline',
-        'view-documents': 'view-documents',
-      };
-      const target = map[viewId];
-      if (target) {
-        $(target).style.display = 'block';
-        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-        const navMap = {
+      // ========== VIEW SWITCHER ==========
+      function switchView(viewId) {
+        currentView = viewId;
+        document.querySelectorAll('.app-subview').forEach(el => el.style.display = 'none');
+        const map = {
           'view-dashboard': 'view-dashboard',
           'view-vehicles': 'view-vehicles',
-          'view-vehicle-detail': 'view-vehicles',
+          'view-vehicle-detail': 'view-vehicle-detail',
           'view-timeline': 'view-timeline',
           'view-documents': 'view-documents',
         };
-        const navId = navMap[viewId];
-        if (navId) document.querySelector(`[data-view="${navId}"]`).classList.add('active');
+        const target = map[viewId];
+        if (target) {
+          $(target).style.display = 'block';
+          document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+          const navMap = {
+            'view-dashboard': 'view-dashboard',
+            'view-vehicles': 'view-vehicles',
+            'view-vehicle-detail': 'view-vehicles',
+            'view-timeline': 'view-timeline',
+            'view-documents': 'view-documents',
+          };
+          const navId = navMap[viewId];
+          if (navId) document.querySelector(`[data-view="${navId}"]`).classList.add('active');
 
-        if (viewId === 'view-dashboard') renderDashboard();
-        else if (viewId === 'view-vehicles') renderVehicles();
-        else if (viewId === 'view-timeline') renderGlobalTimeline();
-      }
-    }
-
-    // ========== LOGOUT ==========
-    async function logout() {
-      await supabase.auth.signOut();
-      currentUser = null;
-      vehicles = [];
-      appContainer.style.display = 'none';
-      authView.classList.add('active');
-      triggerToast('Desconectado.');
-    }
-
-    // ========== MODAL HELPERS ==========
-    function openModal(id) {
-      $(id).classList.add('active');
-    }
-    function closeModal(id) {
-      $(id).classList.remove('active');
-    }
-
-    // ========== TOAST ==========
-    function triggerToast(msg) {
-      toastMsg.innerText = msg;
-      toast.classList.add('show');
-      clearTimeout(toast._timer);
-      toast._timer = setTimeout(() => toast.classList.remove('show'), 3500);
-    }
-
-    // ========== MOUSE GLOW ==========
-    document.addEventListener('mousemove', (e) => {
-      document.querySelectorAll('.glow-card').forEach(card => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        card.style.setProperty('--mouse-x', x + 'px');
-        card.style.setProperty('--mouse-y', y + 'px');
-      });
-    });
-
-    // ========== INICIALIZAR EVENTOS ==========
-    document.addEventListener('DOMContentLoaded', () => {
-      // Auth
-      authForm.addEventListener('submit', handleAuth);
-      toggleAuthBtn.addEventListener('click', toggleAuthMode);
-
-      // Vehicle form
-      $('vehicleForm').addEventListener('submit', saveVehicle);
-      $('cancelVehicleBtn').addEventListener('click', () => closeModal('vehicleFormModal'));
-
-      // Maintenance form
-      $('maintenanceForm').addEventListener('submit', addMaintenance);
-      $('cancelMaintenanceBtn').addEventListener('click', () => closeModal('maintenanceFormModal'));
-
-      // Add vehicle buttons
-      $('addVehicleBtn').addEventListener('click', () => openVehicleForm());
-      $('addVehicleBtn2').addEventListener('click', () => openVehicleForm());
-
-      // Logout
-      $('logoutBtn').addEventListener('click', logout);
-
-      // Sidebar navigation
-      document.querySelectorAll('.sidebar-item').forEach(item => {
-        item.addEventListener('click', () => {
-          const view = item.dataset.view;
-          if (view) switchView(view);
-        });
-      });
-
-      // Notifications
-      $('notifBtn').addEventListener('click', () => triggerToast('Sem novas notificações'));
-
-      // Search
-      $('globalSearch').addEventListener('input', (e) => filterVehicles(e.target.value));
-
-      // QR modal actions
-      $('copyLinkBtn').addEventListener('click', copyPublicLink);
-      $('closeQrBtn').addEventListener('click', () => closeModal('qrModal'));
-
-      // Back to app from public
-      $('backToAppBtn').addEventListener('click', () => {
-        if (currentUser) {
-          document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-          appContainer.style.display = 'block';
-          switchView('view-dashboard');
-        } else {
-          switchView('view-auth');
+          if (viewId === 'view-dashboard') renderDashboard();
+          else if (viewId === 'view-vehicles') renderVehicles();
+          else if (viewId === 'view-timeline') renderGlobalTimeline();
         }
-      });
+      }
 
-      // Document cards
-      document.querySelectorAll('.doc-card').forEach(card => {
-        card.addEventListener('click', () => triggerToast('Baixando documento...'));
-      });
-
-      // Logo click
-      document.querySelectorAll('.logo').forEach(el => {
-        el.addEventListener('click', () => {
-          if (currentUser) switchView('view-dashboard');
-          else switchView('view-auth');
-        });
-      });
-
-      // Fechar modais com clique fora
-      document.querySelectorAll('.modal-overlay').forEach(el => {
-        el.addEventListener('click', function(e) {
-          if (e.target === this) this.classList.remove('active');
-        });
-      });
-    });
-
-    // ========== VERIFICAR SESSÃO ==========
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        currentUser = session.user;
-        loadUserData().then(() => showApp());
-      } else {
+      // ========== LOGOUT ==========
+      async function logout() {
+        await supabase.auth.signOut();
+        currentUser = null;
+        vehicles = [];
+        appContainer.style.display = 'none';
         authView.classList.add('active');
+        triggerToast('Desconectado.');
       }
-    });
 
-    // ========== PÁGINA PÚBLICA via URL ==========
-    window.addEventListener('DOMContentLoaded', () => {
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
-      if (id) {
-        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-        $('view-public').classList.add('active');
-        renderPublic(id);
+      // ========== MODAL HELPERS ==========
+      function openModal(id) {
+        $(id).classList.add('active');
       }
-    });
+      function closeModal(id) {
+        $(id).classList.remove('active');
+      }
 
-    // ========== EXPOR FUNÇÕES GLOBAIS ==========
-    window.openVehicleForm = openVehicleForm;
-    window.editVehicle = editVehicle;
-    window.deleteVehicle = deleteVehicle;
-    window.viewVehicleDetail = viewVehicleDetail;
-    window.openMaintenanceForm = openMaintenanceForm;
-    window.generateQR = generateQR;
-    window.triggerToast = triggerToast;
-    window.switchView = switchView;
-    window.filterVehicles = filterVehicles;
-    window.toggleAuthMode = toggleAuthMode;
+      // ========== TOAST ==========
+      function triggerToast(msg) {
+        toastMsg.innerText = msg;
+        toast.classList.add('show');
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => toast.classList.remove('show'), 3500);
+      }
+
+      // ========== MOUSE GLOW ==========
+      document.addEventListener('mousemove', (e) => {
+        document.querySelectorAll('.glow-card').forEach(card => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          card.style.setProperty('--mouse-x', x + 'px');
+          card.style.setProperty('--mouse-y', y + 'px');
+        });
+      });
+
+      // ========== INICIALIZAR EVENTOS ==========
+      function init() {
+        // Auth
+        authForm.addEventListener('submit', handleAuth);
+        toggleAuthBtn.addEventListener('click', toggleAuthMode);
+
+        // Vehicle form
+        $('vehicleForm').addEventListener('submit', saveVehicle);
+        $('cancelVehicleBtn').addEventListener('click', () => closeModal('vehicleFormModal'));
+
+        // Maintenance form
+        $('maintenanceForm').addEventListener('submit', addMaintenance);
+        $('cancelMaintenanceBtn').addEventListener('click', () => closeModal('maintenanceFormModal'));
+
+        // Add vehicle buttons
+        $('addVehicleBtn').addEventListener('click', () => openVehicleForm());
+        $('addVehicleBtn2').addEventListener('click', () => openVehicleForm());
+
+        // Logout
+        $('logoutBtn').addEventListener('click', logout);
+
+        // Sidebar navigation
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+          item.addEventListener('click', () => {
+            const view = item.dataset.view;
+            if (view) switchView(view);
+          });
+        });
+
+        // Notifications
+        $('notifBtn').addEventListener('click', () => triggerToast('Sem novas notificações'));
+
+        // Search
+        $('globalSearch').addEventListener('input', (e) => filterVehicles(e.target.value));
+
+        // QR modal actions
+        $('copyLinkBtn').addEventListener('click', copyPublicLink);
+        $('closeQrBtn').addEventListener('click', () => closeModal('qrModal'));
+
+        // Back to app from public
+        $('backToAppBtn').addEventListener('click', () => {
+          if (currentUser) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            appContainer.style.display = 'block';
+            switchView('view-dashboard');
+          } else {
+            switchView('view-auth');
+          }
+        });
+
+        // Document cards
+        document.querySelectorAll('.doc-card').forEach(card => {
+          card.addEventListener('click', () => triggerToast('Baixando documento...'));
+        });
+
+        // Logo click
+        document.querySelectorAll('.logo').forEach(el => {
+          el.addEventListener('click', () => {
+            if (currentUser) switchView('view-dashboard');
+            else switchView('view-auth');
+          });
+        });
+
+        // Fechar modais com clique fora
+        document.querySelectorAll('.modal-overlay').forEach(el => {
+          el.addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+          });
+        });
+
+        // ========== VERIFICAR SESSÃO ==========
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session) {
+            currentUser = session.user;
+            loadUserData().then(() => showApp());
+          } else {
+            authView.classList.add('active');
+          }
+        });
+
+        // ========== PÁGINA PÚBLICA via URL ==========
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        if (id) {
+          document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+          $('view-public').classList.add('active');
+          renderPublic(id);
+        }
+      }
+
+      // Aguarda o DOM estar pronto
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+      // ========== EXPOR FUNÇÕES GLOBAIS (para uso em onclick) ==========
+      window.openVehicleForm = openVehicleForm;
+      window.editVehicle = editVehicle;
+      window.deleteVehicle = deleteVehicle;
+      window.viewVehicleDetail = viewVehicleDetail;
+      window.openMaintenanceForm = openMaintenanceForm;
+      window.generateQR = generateQR;
+      window.triggerToast = triggerToast;
+      window.switchView = switchView;
+      window.filterVehicles = filterVehicles;
+      window.toggleAuthMode = toggleAuthMode;
+
+    })();
   </script>
 </body>
 </html>
