@@ -382,6 +382,221 @@
       margin-top: 8px;
     }
 
+    /* ===== TABS DO PAINEL DO VEÍCULO ===== */
+    .panel-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 28px;
+      padding: 6px;
+      overflow-x: auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+    }
+    .panel-tabs::-webkit-scrollbar { display: none; }
+    .panel-tab {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      background: transparent;
+      border: none;
+      transition: var(--transition);
+    }
+    .panel-tab:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+    .panel-tab.active {
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent-electric), #0044b3);
+      box-shadow: 0 4px 16px rgba(0,102,255,0.35);
+    }
+    .tab-pane { display: none; animation: fadeIn 0.35s ease forwards; }
+    .tab-pane.active { display: block; }
+
+    /* ===== CARDS DE ESTATÍSTICA ===== */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 22px;
+    }
+    .stat-card .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .stat-card .stat-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .stat-card .stat-sub {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* ===== PAINEL DE GASTOS POR CATEGORIA ===== */
+    .spend-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .spend-row .spend-label {
+      width: 150px;
+      flex-shrink: 0;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .spend-row .spend-bar-track {
+      flex: 1;
+      height: 8px;
+      background: var(--bg-surface);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .spend-row .spend-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--accent-electric), var(--accent-cyan));
+    }
+    .spend-row .spend-value {
+      width: 90px;
+      flex-shrink: 0;
+      text-align: right;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    /* ===== ÍCONE DE TIPO DE MANUTENÇÃO ===== */
+    .maint-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      background: rgba(0,102,255,0.12);
+      border: 1px solid rgba(0,102,255,0.25);
+    }
+
+    /* ===== GALERIA DE FOTOS ===== */
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 14px;
+    }
+    .photo-item {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+    }
+    .photo-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: var(--transition);
+    }
+    .photo-item:hover img { transform: scale(1.06); }
+    .photo-item .photo-caption {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      padding: 8px 10px;
+      font-size: 0.72rem;
+      color: #fff;
+      background: linear-gradient(0deg, rgba(0,0,0,0.75), transparent);
+    }
+    .photo-upload-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      aspect-ratio: 4/3;
+      border-radius: 12px;
+      border: 1.5px dashed var(--border-medium);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: var(--transition);
+    }
+    .photo-upload-tile:hover { border-color: var(--accent-electric); color: #fff; background: rgba(0,102,255,0.06); }
+
+    /* ===== LISTA DE DOCUMENTOS ===== */
+    .doc-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+    .doc-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(255,68,68,0.12);
+      border: 1px solid rgba(255,68,68,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .doc-info { flex: 1; min-width: 0; }
+    .doc-info .doc-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .doc-info .doc-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .upload-dropzone {
+      border: 1.5px dashed var(--border-medium);
+      border-radius: 14px;
+      padding: 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-bottom: 24px;
+      color: var(--text-secondary);
+    }
+    .upload-dropzone:hover { border-color: var(--accent-electric); color: #fff; background: rgba(0,102,255,0.05); }
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state .empty-icon { font-size: 2rem; margin-bottom: 12px; }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
       .top-nav { width: 95%; padding: 10px 16px; flex-wrap: wrap; gap: 8px; }
@@ -403,17 +618,64 @@
       <h3 style="font-size:1.4rem; margin-bottom:16px;">Adicionar Manutenção</h3>
       <form id="maintenanceForm">
         <input type="hidden" id="maintenanceVehicleId" value="" />
+        <label>Tipo de Registro *</label>
+        <select id="mType" required>
+          <option value="oleo">🛢️ Troca de Óleo</option>
+          <option value="revisao">🔧 Revisão / Checkup</option>
+          <option value="reparo">⚙️ Reparo</option>
+          <option value="pneus">🛞 Pneus / Alinhamento</option>
+          <option value="pecas">🔩 Peças / Acessórios</option>
+          <option value="outro" selected>📋 Outro</option>
+        </select>
         <label>Data</label>
         <input type="text" id="mDate" placeholder="Ex: 12 Out, 2026" required />
         <label>Descrição *</label>
         <input type="text" id="mDesc" placeholder="Troca de óleo" required />
         <label>Valor (opcional)</label>
         <input type="text" id="mValue" placeholder="R$ 1.200" />
+        <label>Quilometragem (opcional)</label>
+        <input type="text" id="mKm" placeholder="Ex: 45.000 km" />
         <label>Oficina / Local</label>
         <input type="text" id="mPlace" placeholder="Concessionária Stuttgart" />
         <div style="display:flex; gap:12px; margin-top:20px; justify-content:flex-end;">
           <button type="button" id="cancelMaintenanceBtn" class="btn-secondary">Cancelar</button>
           <button type="submit" class="btn-primary">Adicionar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL ADICIONAR DOCUMENTO ===== -->
+  <div id="documentFormModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="font-size:1.4rem; margin-bottom:16px;">Anexar Documento</h3>
+      <form id="documentForm">
+        <input type="hidden" id="documentVehicleId" value="" />
+        <label>Nome do Documento *</label>
+        <input type="text" id="docName" placeholder="Ex: Nota fiscal da revisão" required />
+        <label>Arquivo (PDF) *</label>
+        <input type="file" id="docFile" accept="application/pdf" required />
+        <div style="display:flex; gap:12px; margin-top:20px; justify-content:flex-end;">
+          <button type="button" id="cancelDocumentBtn" class="btn-secondary">Cancelar</button>
+          <button type="submit" id="docSubmitBtn" class="btn-primary">Anexar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL ADICIONAR FOTO ===== -->
+  <div id="photoFormModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="font-size:1.4rem; margin-bottom:16px;">Adicionar Foto</h3>
+      <form id="photoForm">
+        <input type="hidden" id="photoVehicleId" value="" />
+        <label>Legenda (opcional)</label>
+        <input type="text" id="photoCaption" placeholder="Ex: Lateral direita" />
+        <label>Imagem *</label>
+        <input type="file" id="photoFile" accept="image/*" required />
+        <div style="display:flex; gap:12px; margin-top:20px; justify-content:flex-end;">
+          <button type="button" id="cancelPhotoBtn" class="btn-secondary">Cancelar</button>
+          <button type="submit" id="photoSubmitBtn" class="btn-primary">Adicionar</button>
         </div>
       </form>
     </div>
@@ -540,7 +802,7 @@
         try {
           const { data, error } = await supabase
             .from('vehicles')
-            .select('*, maintenances(*)')
+            .select('*, maintenances(*), documents(*), photos(*)')
             .eq('uuid', uuid)
             .maybeSingle();
           if (error) return null;
@@ -569,6 +831,191 @@
         const resp = await fetch(FIPE_API_BASE + `/marcas/${marcaId}/modelos/${modeloId}/anos`);
         if (!resp.ok) throw new Error('Erro ao carregar anos');
         return resp.json();
+      }
+
+      // ========== TIPOS DE MANUTENÇÃO ==========
+      const MAINT_TYPES = {
+        oleo:    { label: 'Troca de Óleo',       icon: '🛢️' },
+        revisao: { label: 'Revisão / Checkup',   icon: '🔧' },
+        reparo:  { label: 'Reparo',              icon: '⚙️' },
+        pneus:   { label: 'Pneus / Alinhamento', icon: '🛞' },
+        pecas:   { label: 'Peças / Acessórios',  icon: '🔩' },
+        outro:   { label: 'Outro',               icon: '📋' },
+      };
+      function maintTypeInfo(type) {
+        return MAINT_TYPES[type] || MAINT_TYPES.outro;
+      }
+
+      // ========== FINANCEIRO ==========
+      function parseMoneyToNumber(str) {
+        if (!str) return 0;
+        let cleaned = String(str).replace(/[^\d,.-]/g, '');
+        if (!cleaned) return 0;
+        if (cleaned.includes(',') && cleaned.includes('.')) {
+          cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+        } else if (cleaned.includes(',')) {
+          cleaned = cleaned.replace(',', '.');
+        }
+        const num = parseFloat(cleaned);
+        return isNaN(num) ? 0 : num;
+      }
+      function formatBRL(num) {
+        return (num || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      }
+      function computeFinancials(maintenances) {
+        const list = maintenances || [];
+        let total = 0;
+        const byType = {};
+        list.forEach(m => {
+          const val = parseMoneyToNumber(m.value);
+          total += val;
+          const t = m.type || 'outro';
+          byType[t] = (byType[t] || 0) + val;
+        });
+        return { total, byType, count: list.length };
+      }
+
+      // ========== RENDER: VISÃO GERAL ==========
+      function renderOverviewHTML(v) {
+        const maints = v.maintenances || [];
+        const fin = computeFinancials(maints);
+        const oilEntries = maints.filter(m => (m.type || 'outro') === 'oleo');
+        const lastOil = oilEntries[oilEntries.length - 1];
+        const docsCount = (v.documents || []).length;
+        const photosCount = (v.photos || []).length;
+
+        const spendRows = Object.keys(fin.byType).length
+          ? Object.entries(fin.byType)
+              .sort((a, b) => b[1] - a[1])
+              .map(([type, val]) => {
+                const info = maintTypeInfo(type);
+                const pct = fin.total > 0 ? Math.round((val / fin.total) * 100) : 0;
+                return `
+                  <div class="spend-row">
+                    <div class="spend-label">${info.icon} ${info.label}</div>
+                    <div class="spend-bar-track"><div class="spend-bar-fill" style="width:${pct}%;"></div></div>
+                    <div class="spend-value">${formatBRL(val)}</div>
+                  </div>
+                `;
+              }).join('')
+          : '<p style="color:var(--text-muted);">Nenhum gasto registrado ainda.</p>';
+
+        return `
+          <div class="stat-grid">
+            <div class="stat-card">
+              <p class="stat-label">Total Investido</p>
+              <p class="stat-value">${formatBRL(fin.total)}</p>
+              <p class="stat-sub">${fin.count} registro${fin.count === 1 ? '' : 's'} no total</p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-label">Última Troca de Óleo</p>
+              <p class="stat-value" style="font-size:1.2rem;">${lastOil ? lastOil.date : 'Sem registro'}</p>
+              <p class="stat-sub">${lastOil && lastOil.mileage ? lastOil.mileage : 'Adicione a quilometragem'}</p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-label">Documentos Anexados</p>
+              <p class="stat-value">${docsCount}</p>
+              <p class="stat-sub">Notas fiscais, laudos e manuais</p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-label">Fotos do Veículo</p>
+              <p class="stat-value">${photosCount}</p>
+              <p class="stat-sub">Registro visual do estado atual</p>
+            </div>
+          </div>
+          <div class="glow-card" style="padding:32px;">
+            <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:24px;">Gastos por Categoria</h3>
+            ${spendRows}
+          </div>
+        `;
+      }
+
+      // ========== RENDER: TROCA DE ÓLEO ==========
+      function renderOilHTML(v) {
+        const oilEntries = (v.maintenances || []).filter(m => (m.type || 'outro') === 'oleo');
+        const last = oilEntries[oilEntries.length - 1];
+        const list = oilEntries.map(m => `
+          <div class="timeline-node">
+            <div class="timeline-card">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+                <div style="display:flex; gap:12px;">
+                  <div class="maint-icon">🛢️</div>
+                  <div>
+                    <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} ${m.place ? '• ' + m.place : ''}</span>
+                    <h4 style="font-size:1.05rem; font-weight:600; margin-top:4px;">${m.description}</h4>
+                    ${m.mileage ? `<span class="badge badge-gray" style="margin-top:8px;">${m.mileage}</span>` : ''}
+                  </div>
+                </div>
+                ${m.value ? `<span class="badge badge-blue">${m.value}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        `).join('') || `<div class="empty-state"><div class="empty-icon">🛢️</div><p>Nenhuma troca de óleo registrada ainda.</p></div>`;
+
+        return `
+          <div class="glow-card" style="padding:32px; margin-bottom:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+              <div>
+                <h3 style="font-size:1.2rem; font-weight:700;">Histórico de Troca de Óleo</h3>
+                <p style="color:var(--text-secondary); font-size:0.85rem; margin-top:4px; max-width:520px;">
+                  ${last ? `Última troca em ${last.date}${last.mileage ? ' com ' + last.mileage : ''}. Recomenda-se nova troca a cada 10.000 km ou 6 meses, o que ocorrer primeiro.` : 'Registre a primeira troca de óleo para começar a acompanhar o intervalo de manutenção.'}
+                </p>
+              </div>
+              <button id="addOilBtn" class="btn-primary">+ Registrar Troca de Óleo</button>
+            </div>
+          </div>
+          <div class="glow-card" style="padding:32px;">
+            <div class="timeline">${list}</div>
+          </div>
+        `;
+      }
+
+      // ========== RENDER: DOCUMENTOS ==========
+      function renderDocsHTML(v) {
+        const docs = v.documents || [];
+        const list = docs.map(d => `
+          <a class="doc-item" href="${d.url}" target="_blank" rel="noopener" style="text-decoration:none; color:inherit;">
+            <div class="doc-icon">📄</div>
+            <div class="doc-info">
+              <div class="doc-name">${d.name}</div>
+              <div class="doc-meta">${d.uploaded_at ? new Date(d.uploaded_at).toLocaleDateString('pt-BR') : ''} • Ver / Baixar PDF</div>
+            </div>
+          </a>
+        `).join('') || `<div class="empty-state"><div class="empty-icon">📄</div><p>Nenhum documento anexado ainda.</p></div>`;
+
+        return `
+          <div class="glow-card" style="padding:32px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+              <h3 style="font-size:1.2rem; font-weight:700;">Documentos do Veículo</h3>
+              <button id="addDocBtn" class="btn-primary">+ Anexar Documento</button>
+            </div>
+            ${list}
+          </div>
+        `;
+      }
+
+      // ========== RENDER: FOTOS ==========
+      function renderPhotosHTML(v) {
+        const photos = v.photos || [];
+        const items = photos.map(p => `
+          <div class="photo-item">
+            <img src="${p.url}" alt="${p.caption || 'Foto do veículo'}" loading="lazy" />
+            ${p.caption ? `<div class="photo-caption">${p.caption}</div>` : ''}
+          </div>
+        `).join('');
+
+        return `
+          <div class="glow-card" style="padding:32px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+              <h3 style="font-size:1.2rem; font-weight:700;">Galeria de Fotos</h3>
+              <button id="addPhotoBtn" class="btn-primary">+ Adicionar Foto</button>
+            </div>
+            <div class="photo-grid">
+              ${items}
+              ${photos.length === 0 ? `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🖼️</div><p>Nenhuma foto adicionada ainda.</p></div>` : ''}
+            </div>
+          </div>
+        `;
       }
 
       // ========== RENDER PÁGINA PÚBLICA ==========
@@ -780,19 +1227,26 @@
         // CASO 2: QR Code JÁ CADASTRADO → PAINEL DO VEÍCULO
         // -------------------------------------------------------------
         const v = vehicleData;
-        const maintList = (v.maintenances || []).map(m => `
-          <div class="timeline-node">
-            <div class="timeline-card">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <div>
-                  <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} ${m.place ? '• ' + m.place : ''}</span>
-                  <h4 style="font-size:1.1rem; font-weight:600; margin-top:4px;">${m.description}</h4>
+        const maintList = (v.maintenances || []).map(m => {
+          const info = maintTypeInfo(m.type);
+          return `
+            <div class="timeline-node">
+              <div class="timeline-card">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+                  <div style="display:flex; gap:12px;">
+                    <div class="maint-icon">${info.icon}</div>
+                    <div>
+                      <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} ${m.place ? '• ' + m.place : ''}</span>
+                      <h4 style="font-size:1.1rem; font-weight:600; margin-top:4px;">${m.description}</h4>
+                      ${m.mileage ? `<span class="badge badge-gray" style="margin-top:8px;">${m.mileage}</span>` : ''}
+                    </div>
+                  </div>
+                  ${m.value ? `<span class="badge badge-blue">${m.value}</span>` : ''}
                 </div>
-                ${m.value ? `<span class="badge badge-blue">${m.value}</span>` : ''}
               </div>
             </div>
-          </div>
-        `).join('') || '<p style="color:var(--text-muted);">Nenhuma manutenção registrada até o momento.</p>';
+          `;
+        }).join('') || '<p style="color:var(--text-muted);">Nenhuma manutenção registrada até o momento.</p>';
 
         publicContent.innerHTML = `
           <div class="glow-card" style="margin-bottom:32px; padding:0; overflow:hidden;">
@@ -816,16 +1270,60 @@
             </div>
           </div>
 
-          <div class="glow-card" style="padding:32px;">
-            <h3 style="font-size:1.3rem; font-weight:700; margin-bottom:24px;">Linha do Tempo de Manutenções</h3>
-            <div class="timeline">${maintList}</div>
+          <div class="panel-tabs">
+            <button type="button" class="panel-tab active" data-tab="overview">📊 Visão Geral</button>
+            <button type="button" class="panel-tab" data-tab="timeline">🕒 Timeline</button>
+            <button type="button" class="panel-tab" data-tab="oil">🛢️ Troca de Óleo</button>
+            <button type="button" class="panel-tab" data-tab="docs">📄 Documentos</button>
+            <button type="button" class="panel-tab" data-tab="photos">🖼️ Fotos</button>
           </div>
+
+          <div id="tab-overview" class="tab-pane active">${renderOverviewHTML(v)}</div>
+          <div id="tab-timeline" class="tab-pane">
+            <div class="glow-card" style="padding:32px;">
+              <h3 style="font-size:1.3rem; font-weight:700; margin-bottom:24px;">Linha do Tempo de Manutenções</h3>
+              <div class="timeline">${maintList}</div>
+            </div>
+          </div>
+          <div id="tab-oil" class="tab-pane">${renderOilHTML(v)}</div>
+          <div id="tab-docs" class="tab-pane">${renderDocsHTML(v)}</div>
+          <div id="tab-photos" class="tab-pane">${renderPhotosHTML(v)}</div>
         `;
+
+        // -------- NAVEGAÇÃO ENTRE ABAS --------
+        document.querySelectorAll('.panel-tab').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.panel-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            $('tab-' + btn.dataset.tab)?.classList.add('active');
+          });
+        });
 
         $('addMaintBtn')?.addEventListener('click', () => {
           $('maintenanceVehicleId').value = v.id;
           $('maintenanceForm').reset();
+          $('mType').value = 'outro';
           $('maintenanceFormModal').classList.add('active');
+        });
+
+        $('addOilBtn')?.addEventListener('click', () => {
+          $('maintenanceVehicleId').value = v.id;
+          $('maintenanceForm').reset();
+          $('mType').value = 'oleo';
+          $('maintenanceFormModal').classList.add('active');
+        });
+
+        $('addDocBtn')?.addEventListener('click', () => {
+          $('documentVehicleId').value = v.id;
+          $('documentForm').reset();
+          $('documentFormModal').classList.add('active');
+        });
+
+        $('addPhotoBtn')?.addEventListener('click', () => {
+          $('photoVehicleId').value = v.id;
+          $('photoForm').reset();
+          $('photoFormModal').classList.add('active');
         });
 
         backToGeneratorBtn.style.display = 'inline-block';
@@ -840,9 +1338,11 @@
         const vehicleId = $('maintenanceVehicleId').value;
         const data = {
           vehicle_id: parseInt(vehicleId),
+          type: $('mType').value,
           date: $('mDate').value.trim(),
           description: $('mDesc').value.trim(),
           value: $('mValue').value.trim(),
+          mileage: $('mKm').value.trim(),
           place: $('mPlace').value.trim(),
         };
 
@@ -859,6 +1359,106 @@
 
       $('cancelMaintenanceBtn').addEventListener('click', () => {
         $('maintenanceFormModal').classList.remove('active');
+      });
+
+      // ========== HANDLER DOCUMENTOS (PDF) ==========
+      $('documentForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const vehicleId = $('documentVehicleId').value;
+        const name = $('docName').value.trim();
+        const file = $('docFile').files[0];
+        const submitBtn = $('docSubmitBtn');
+
+        if (!file) {
+          triggerToast('Selecione um arquivo PDF.', true);
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Enviando...';
+
+        try {
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const path = `${vehicleId}/${Date.now()}_${safeName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('vehicle-documents')
+            .upload(path, file, { contentType: 'application/pdf' });
+          if (uploadError) throw new Error(uploadError.message);
+
+          const { data: urlData } = supabase.storage.from('vehicle-documents').getPublicUrl(path);
+
+          const { error: insertError } = await supabase.from('documents').insert([{
+            vehicle_id: parseInt(vehicleId),
+            name: name,
+            url: urlData.publicUrl,
+            path: path,
+          }]);
+          if (insertError) throw new Error(insertError.message);
+
+          triggerToast('Documento anexado com sucesso!');
+          $('documentFormModal').classList.remove('active');
+          renderPublic();
+        } catch (err) {
+          triggerToast('Erro: ' + err.message, true);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Anexar';
+        }
+      });
+
+      $('cancelDocumentBtn').addEventListener('click', () => {
+        $('documentFormModal').classList.remove('active');
+      });
+
+      // ========== HANDLER FOTOS ==========
+      $('photoForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const vehicleId = $('photoVehicleId').value;
+        const caption = $('photoCaption').value.trim();
+        const file = $('photoFile').files[0];
+        const submitBtn = $('photoSubmitBtn');
+
+        if (!file) {
+          triggerToast('Selecione uma imagem.', true);
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Enviando...';
+
+        try {
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const path = `${vehicleId}/${Date.now()}_${safeName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('vehicle-photos')
+            .upload(path, file, { contentType: file.type || 'image/jpeg' });
+          if (uploadError) throw new Error(uploadError.message);
+
+          const { data: urlData } = supabase.storage.from('vehicle-photos').getPublicUrl(path);
+
+          const { error: insertError } = await supabase.from('photos').insert([{
+            vehicle_id: parseInt(vehicleId),
+            url: urlData.publicUrl,
+            caption: caption,
+            path: path,
+          }]);
+          if (insertError) throw new Error(insertError.message);
+
+          triggerToast('Foto adicionada com sucesso!');
+          $('photoFormModal').classList.remove('active');
+          renderPublic();
+        } catch (err) {
+          triggerToast('Erro: ' + err.message, true);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Adicionar';
+        }
+      });
+
+      $('cancelPhotoBtn').addEventListener('click', () => {
+        $('photoFormModal').classList.remove('active');
       });
 
       // ========== INICIALIZAÇÃO ==========
