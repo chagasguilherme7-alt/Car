@@ -753,30 +753,30 @@
   </div>
 
   <!-- ============================================================== -->
-  <!-- ===== JAVASCRIPT (envolvido em IIFE) ===== -->
+  <!-- ===== JAVASCRIPT ===== -->
   <!-- ============================================================== -->
   <script>
     (function() {
       'use strict';
 
-      // ========== CONFIGURAÇÃO SUPABASE ==========
+      // ========== CONFIGURAÇÃO ==========
       const SUPABASE_URL = 'https://mdyzyfimlkmxyishmaao.supabase.co';
       const SUPABASE_ANON_KEY = 'sb_publishable_XeZ2g0WeeP09BVbm6C4n7w_McAyCiCF';
 
-      // Evita recriar o cliente se já existir
-      let supabaseClient;
+      // ========== INICIALIZAR SUPABASE (apenas uma vez) ==========
+      let supabase;
       if (window._supabaseClient) {
-        supabaseClient = window._supabaseClient;
+        supabase = window._supabaseClient;
       } else {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        window._supabaseClient = supabaseClient; // guarda para reuso
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window._supabaseClient = supabase;
       }
-      const supabase = supabaseClient;
 
-      // ========== ESTADO GLOBAL ==========
+      // ========== ESTADO ==========
       let currentUser = null;
       let vehicles = [];
       let currentView = 'view-auth';
+      let isLoginMode = true;
 
       // ========== DOM REFS ==========
       const $ = id => document.getElementById(id);
@@ -792,9 +792,15 @@
       const toast = $('toast');
       const toastMsg = $('toast-message');
 
-      // ========== AUTENTICAÇÃO ==========
-      let isLoginMode = true;
+      // ========== TOAST ==========
+      function triggerToast(msg) {
+        toastMsg.innerText = msg;
+        toast.classList.add('show');
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => toast.classList.remove('show'), 3500);
+      }
 
+      // ========== AUTENTICAÇÃO ==========
       function toggleAuthMode() {
         isLoginMode = !isLoginMode;
         if (isLoginMode) {
@@ -842,7 +848,7 @@
         authButton.textContent = isLoginMode ? 'Entrar' : 'Cadastrar';
       }
 
-      // ========== CARREGAR DADOS DO USUÁRIO ==========
+      // ========== CARREGAR DADOS ==========
       async function loadUserData() {
         if (!currentUser) return;
         const { data, error } = await supabase
@@ -894,7 +900,7 @@
                 <circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
               </svg>
               <h2>Bem-vindo ao CarPass!</h2>
-              <p>Parece que você ainda não cadastrou nenhum veículo. Comece agora mesmo e tenha todo o histórico do seu carro na palma da mão.</p>
+              <p>Parece que você ainda não cadastrou nenhum veículo. Comece agora mesmo.</p>
               <button id="emptyAddBtn" class="btn-primary">Adicionar meu primeiro veículo</button>
             </div>
           </div>
@@ -992,7 +998,6 @@
           `;
         }).join('');
 
-        // Event delegation para os botões
         grid.querySelectorAll('[data-action]').forEach(btn => {
           btn.addEventListener('click', (e) => {
             const action = btn.dataset.action;
@@ -1147,19 +1152,17 @@
           </div>
         `;
 
-        // Eventos do detalhe
         $('shareBtn').addEventListener('click', () => triggerToast('Link copiado!'));
         $('qrBtn').addEventListener('click', () => generateQR(v.id));
         $('addMaintBtn').addEventListener('click', () => openMaintenanceForm(v.id));
 
-        // Mudar para view de detalhe
         document.querySelectorAll('.app-subview').forEach(el => el.style.display = 'none');
         $('view-vehicle-detail').style.display = 'block';
         document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
         document.querySelector('[data-view="view-vehicles"]').classList.add('active');
       }
 
-      // ========== MAINTENANCE CRUD ==========
+      // ========== MAINTENANCE ==========
       function openMaintenanceForm(vehicleId) {
         $('maintenanceVehicleId').value = vehicleId;
         $('maintenanceForm').reset();
@@ -1188,7 +1191,6 @@
           triggerToast('Manutenção adicionada!');
           closeModal('maintenanceFormModal');
           await loadUserData();
-          // Recarregar detalhe se estiver visível
           if ($('view-vehicle-detail').style.display !== 'none') {
             viewVehicleDetail(vehicleId);
           }
@@ -1371,14 +1373,6 @@
         $(id).classList.remove('active');
       }
 
-      // ========== TOAST ==========
-      function triggerToast(msg) {
-        toastMsg.innerText = msg;
-        toast.classList.add('show');
-        clearTimeout(toast._timer);
-        toast._timer = setTimeout(() => toast.classList.remove('show'), 3500);
-      }
-
       // ========== MOUSE GLOW ==========
       document.addEventListener('mousemove', (e) => {
         document.querySelectorAll('.glow-card').forEach(card => {
@@ -1390,7 +1384,7 @@
         });
       });
 
-      // ========== INICIALIZAR EVENTOS ==========
+      // ========== INICIALIZAÇÃO ==========
       function init() {
         // Auth
         authForm.addEventListener('submit', handleAuth);
@@ -1411,7 +1405,7 @@
         // Logout
         $('logoutBtn').addEventListener('click', logout);
 
-        // Sidebar navigation
+        // Sidebar
         document.querySelectorAll('.sidebar-item').forEach(item => {
           item.addEventListener('click', () => {
             const view = item.dataset.view;
@@ -1425,18 +1419,19 @@
         // Search
         $('globalSearch').addEventListener('input', (e) => filterVehicles(e.target.value));
 
-        // QR modal actions
+        // QR modal
         $('copyLinkBtn').addEventListener('click', copyPublicLink);
         $('closeQrBtn').addEventListener('click', () => closeModal('qrModal'));
 
-        // Back to app from public
+        // Back to app
         $('backToAppBtn').addEventListener('click', () => {
           if (currentUser) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             appContainer.style.display = 'block';
             switchView('view-dashboard');
           } else {
-            switchView('view-auth');
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            authView.classList.add('active');
           }
         });
 
@@ -1445,22 +1440,25 @@
           card.addEventListener('click', () => triggerToast('Baixando documento...'));
         });
 
-        // Logo click
+        // Logo
         document.querySelectorAll('.logo').forEach(el => {
           el.addEventListener('click', () => {
             if (currentUser) switchView('view-dashboard');
-            else switchView('view-auth');
+            else {
+              document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+              authView.classList.add('active');
+            }
           });
         });
 
-        // Fechar modais com clique fora
+        // Close modals on overlay click
         document.querySelectorAll('.modal-overlay').forEach(el => {
           el.addEventListener('click', function(e) {
             if (e.target === this) this.classList.remove('active');
           });
         });
 
-        // ========== VERIFICAR SESSÃO ==========
+        // Check session
         supabase.auth.getSession().then(({ data: { session } }) => {
           if (session) {
             currentUser = session.user;
@@ -1470,7 +1468,7 @@
           }
         });
 
-        // ========== PÁGINA PÚBLICA via URL ==========
+        // Public view via URL
         const params = new URLSearchParams(window.location.search);
         const id = params.get('id');
         if (id) {
@@ -1480,14 +1478,14 @@
         }
       }
 
-      // Aguarda o DOM estar pronto
+      // Start
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
       } else {
         init();
       }
 
-      // ========== EXPOR FUNÇÕES GLOBAIS (para uso em onclick) ==========
+      // ========== EXPOR PARA GLOBAL (para onclick) ==========
       window.openVehicleForm = openVehicleForm;
       window.editVehicle = editVehicle;
       window.deleteVehicle = deleteVehicle;
