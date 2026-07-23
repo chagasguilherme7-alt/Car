@@ -3,400 +3,403 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CarPass | Plataforma SaaS de Histórico Automotivo</title>
-  
+  <title>CarPass | Prontuário Digital do Veículo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <style>
+    /* ===== RESET E VARIÁVEIS ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
     :root {
-      --bg-dark: #08090d;
-      --bg-card: #12141d;
-      --bg-surface: #1a1d29;
-      --bg-elevated: #242838;
-      --border-color: rgba(255, 255, 255, 0.08);
-      --border-hover: rgba(0, 102, 255, 0.4);
-      --text-primary: #f8fafc;
+      --bg-dark: #050508;
+      --bg-card: #0e0e13;
+      --bg-surface: #16161f;
+      --bg-surface-elevated: #20202d;
+      --border-subtle: rgba(255,255,255,0.08);
+      --border-medium: rgba(255,255,255,0.18);
+      --text-primary: #ffffff;
       --text-secondary: #94a3b8;
       --text-muted: #64748b;
-      --primary: #0066ff;
-      --primary-hover: #0052cc;
-      --accent-cyan: #00f2fe;
-      --accent-green: #10b981;
-      --accent-orange: #f59e0b;
-      --accent-purple: #8b5cf6;
-      --radius: 14px;
-      --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      --accent-electric: #0066ff;
+      --accent-cyan: #00d2ff;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --glass-bg: rgba(14, 14, 19, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --shadow-premium: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+      --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
-    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background: var(--bg-dark); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
-
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-dark); }
-    ::-webkit-scrollbar-thumb { background: var(--bg-elevated); border-radius: 4px; }
-
-    /* Layout System */
-    .app-container { display: flex; min-height: 100vh; }
-    
-    /* Sidebar Navigation */
-    .sidebar {
-      width: 260px;
-      background: var(--bg-card);
-      border-right: 1px solid var(--border-color);
-      padding: 28px 20px;
+    body {
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      position: fixed;
-      height: 100vh;
-      z-index: 100;
     }
-    .brand-logo {
-      font-size: 1.3rem;
-      font-weight: 800;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 36px;
-      letter-spacing: -0.5px;
-      cursor: pointer;
-    }
-    .brand-logo .dot {
-      width: 10px; height: 10px; background: var(--primary); border-radius: 50%;
-      box-shadow: 0 0 12px var(--primary);
-    }
-    .nav-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-    .nav-item {
-      padding: 12px 16px;
-      border-radius: 10px;
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: var(--transition);
-    }
-    .nav-item:hover, .nav-item.active {
-      background: var(--bg-surface);
-      color: var(--text-primary);
-    }
-    .nav-item.active {
-      background: rgba(0, 102, 255, 0.12);
-      color: var(--accent-cyan);
-      border: 1px solid rgba(0, 102, 255, 0.25);
-    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-dark); }
+    ::-webkit-scrollbar-thumb { background: var(--bg-surface-elevated); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-electric); }
 
-    /* Main Content Area */
-    .main-wrapper {
-      margin-left: 260px;
-      flex: 1;
-      padding: 32px 40px;
-      max-width: 1300px;
+    /* ===== UTILITÁRIOS ===== */
+    .glass-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
     }
-
-    /* Top Bar */
-    .top-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 32px;
-    }
-    .page-title h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; }
-    .page-title p { color: var(--text-secondary); font-size: 0.85rem; margin-top: 2px; }
-
-    /* SaaS Cards & Grid */
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-      margin-bottom: 32px;
-    }
-    .kpi-card {
+    .glow-card {
+      position: relative;
       background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      padding: 22px;
-      border-radius: var(--radius);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      overflow: hidden;
       transition: var(--transition);
     }
-    .kpi-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
-    .kpi-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); font-weight: 700; }
-    .kpi-value { font-size: 1.8rem; font-weight: 800; margin-top: 8px; color: #fff; }
-    .kpi-sub { font-size: 0.8rem; color: var(--accent-green); margin-top: 6px; font-weight: 500; }
-
-    /* Buttons */
-    .btn {
-      padding: 10px 20px;
+    .glow-card:hover {
+      border-color: rgba(255,255,255,0.25);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-electric), #0044b3);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
       border-radius: 10px;
       font-weight: 600;
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       cursor: pointer;
-      border: none;
+      transition: var(--transition);
+      box-shadow: 0 4px 20px rgba(0,102,255,0.35);
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      transition: var(--transition);
       text-decoration: none;
     }
-    .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 16px rgba(0,102,255,0.3); }
-    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
-    .btn-secondary { background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border-color); }
-    .btn-secondary:hover { background: var(--bg-elevated); border-color: rgba(255,255,255,0.2); }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,102,255,0.6);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-primary);
+      border: 1px solid var(--border-medium);
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.3);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-blue { background: rgba(0,102,255,0.15); color: var(--accent-cyan); border: 1px solid rgba(0,102,255,0.3); }
+    .badge-green { background: rgba(16,185,129,0.15); color: var(--accent-emerald); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-amber { background: rgba(245,158,11,0.15); color: var(--accent-amber); border: 1px solid rgba(245,158,11,0.3); }
 
-    /* Charts Section */
-    .charts-grid {
+    /* ===== VIEWS ===== */
+    .view-section { display: none; animation: fadeIn 0.4s ease forwards; }
+    .view-section.active { display: block; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+    .logo {
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.04em;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .logo-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-electric);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-electric);
+    }
+
+    /* ===== STATS DASHBOARD ===== */
+    .dashboard-grid {
       display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
       margin-bottom: 32px;
     }
-    .chart-box {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      padding: 24px;
+    .stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
-    .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .chart-header h3 { font-size: 1.1rem; font-weight: 700; }
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .stat-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
 
-    /* Timeline Section */
-    .timeline { position: relative; padding-left: 28px; margin-top: 16px; }
+    /* ===== LINHA DO TEMPO (TIMELINE) ===== */
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+      margin-top: 24px;
+    }
     .timeline::before {
-      content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: var(--border-color);
+      content: '';
+      position: absolute;
+      left: 12px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border-subtle);
     }
-    .timeline-item { position: relative; margin-bottom: 24px; }
-    .timeline-item::before {
-      content: ''; position: absolute; left: -22px; top: 6px; width: 10px; height: 10px;
-      border-radius: 50%; background: var(--primary); box-shadow: 0 0 10px var(--primary);
+    .timeline-node {
+      position: relative;
+      margin-bottom: 28px;
     }
-    .timeline-content {
-      background: var(--bg-surface); border: 1px solid var(--border-color);
-      border-radius: 12px; padding: 18px; display: flex; justify-content: space-between; align-items: center;
+    .timeline-node::before {
+      content: '';
+      position: absolute;
+      left: -26px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent-electric);
+      box-shadow: 0 0 12px var(--accent-electric);
+      border: 3px solid var(--bg-dark);
+    }
+    .timeline-card {
+      padding: 20px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      transition: var(--transition);
+    }
+    .timeline-card:hover {
+      border-color: rgba(255,255,255,0.15);
+      background: var(--bg-surface-elevated);
     }
 
-    /* Modal */
+    /* ===== MODAL ===== */
     .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
-      display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
     .modal-overlay.active { display: flex; }
-    .modal-card {
-      background: var(--bg-card); border: 1px solid var(--border-color);
-      border-radius: 18px; width: 100%; max-width: 500px; padding: 28px;
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: 20px;
+      max-width: 520px;
+      width: 100%;
+      padding: 32px;
+      position: relative;
+      animation: modalUp 0.3s ease;
     }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
-    .form-control {
-      width: 100%; background: var(--bg-surface); border: 1px solid var(--border-color);
-      padding: 12px 14px; border-radius: 8px; color: #fff; outline: none; font-size: 0.9rem;
+    @keyframes modalUp {
+      from { transform: translateY(30px) scale(0.95); opacity:0; }
+      to { transform: translateY(0) scale(1); opacity:1; }
     }
-    .form-control:focus { border-color: var(--primary); }
 
-    /* Views Switching */
-    .tab-view { display: none; }
-    .tab-view.active { display: block; animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    /* ===== FORMULÁRIOS & INPUTS ===== */
+    input[type="text"], input[type="email"], input[type="password"], select, textarea {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      padding: 12px 16px;
+      border-radius: 10px;
+      color: #fff;
+      outline: none;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent-electric);
+    }
+    label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
 
-    /* Toast */
+    /* ===== NOTIFICAÇÃO TOAST ===== */
     .toast {
-      position: fixed; bottom: 24px; right: 24px; background: var(--bg-elevated);
-      border: 1px solid var(--primary); color: #fff; padding: 12px 20px; border-radius: 10px;
-      font-size: 0.88rem; font-weight: 600; z-index: 3000; transform: translateY(100px); opacity: 0; transition: var(--transition);
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--accent-electric);
+      color: #fff;
+      padding: 14px 24px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-premium);
+      z-index: 3000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
     .toast.show { transform: translateY(0); opacity: 1; }
 
-    /* Visualização Pública */
-    #public-view { display: none; max-width: 1000px; margin: 40px auto; padding: 20px; }
-    #public-view.active { display: block; }
-    .public-hero {
-      position: relative; height: 320px; border-radius: 18px; overflow: hidden;
-      background-size: cover; background-position: center; margin-bottom: 24px;
-      border: 1px solid var(--border-color);
+    /* ===== QR CODE EXIBIÇÃO ===== */
+    .qr-display {
+      background: #fff;
+      padding: 20px;
+      border-radius: 16px;
+      display: inline-block;
+      min-width: 200px;
+      min-height: 200px;
     }
-    .public-overlay {
-      position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8,9,13,0.3) 0%, var(--bg-card) 100%);
-      padding: 32px; display: flex; flex-direction: column; justify-content: flex-end;
-    }
-
-    @media (max-width: 900px) {
-      .sidebar { width: 70px; padding: 20px 10px; }
-      .brand-logo span, .nav-item span { display: none; }
-      .main-wrapper { margin-left: 70px; padding: 20px; }
-      .charts-grid { grid-template-columns: 1fr; }
+    .qr-display img, .qr-display canvas {
+      display: block;
+      margin: 0 auto;
     }
   </style>
 </head>
 <body>
 
-  <div id="toast" class="toast">Ação concluída com sucesso!</div>
-
-  <div id="public-view" class="tab-view">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-      <div class="brand-logo" onclick="window.location.href=window.location.origin">
-        <div class="dot"></div> <span>CARPASS <small style="font-size:0.6rem; color:var(--primary);">PUBLIC</small></span>
-      </div>
-      <button class="btn btn-secondary" onclick="window.location.href=window.location.origin">Voltar ao Inicio</button>
-    </div>
-    <div id="publicContent">
-      </div>
+  <div id="toast" class="toast">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <span id="toast-message">Notificação</span>
   </div>
 
-  <div class="app-container" id="app-container">
-    
-    <aside class="sidebar">
-      <div class="brand-logo" onclick="window.location.href=window.location.origin">
-        <div class="dot"></div> <span>CARPASS <small style="font-size: 0.6rem; color: var(--primary); font-weight: 800;">PRO</small></span>
-      </div>
-      <ul class="nav-list">
-        <li class="nav-item active" data-tab="tab-dashboard">
-          📊 <span>Dashboard SaaS</span>
-        </li>
-        <li class="nav-item" data-tab="tab-finances">
-          💰 <span>Finanças & Gráficos</span>
-        </li>
-        <li class="nav-item" data-tab="tab-timeline">
-          🛠️ <span>Manutenções</span>
-        </li>
-        <li class="nav-item" data-tab="tab-qrcode">
-          📱 <span>QR Code & Tag</span>
-        </li>
-      </ul>
-    </aside>
+  <div id="maintenanceFormModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="font-size:1.4rem; font-weight:700; margin-bottom:16px;">Registrar Manutenção</h3>
+      <form id="maintenanceForm">
+        <input type="hidden" id="maintenanceVehicleId" value="" />
+        
+        <label>Tipo / Categoria *</label>
+        <select id="mCategory" required>
+          <option value="🛢️ Troca de Óleo & Filtro">🛢️ Troca de Óleo & Filtro</option>
+          <option value="🛑 Sistema de Freios">🛑 Sistema de Freios</option>
+          <option value="🛞 Pneus & Alinhamento">🛞 Pneus & Alinhamento</option>
+          <option value="⚙️ Suspensão & Direção">⚙️ Suspensão & Direção</option>
+          <option value="🔋 Bateria & Elétrica">🔋 Bateria & Elétrica</option>
+          <option value="🔍 Revisão Geral">🔍 Revisão Geral</option>
+          <option value="🛠️ Outros Serviços">🛠️ Outros Serviços</option>
+        </select>
 
-    <main class="main-wrapper">
-      
-      <div class="top-header">
-        <div class="page-title">
-          <h1 id="vehicleTitleDisplay">Carregando Veículo...</h1>
-          <p id="vehicleSubDisplay">Verificando banco de dados...</p>
-        </div>
-        <div style="display:flex; gap: 12px;">
-          <button class="btn btn-secondary" id="btnQuickOil">🛢️ + Troca de Óleo</button>
-          <button class="btn btn-primary" id="btnOpenMaintModal">+ Nova Manutenção</button>
-        </div>
-      </div>
-
-      <section id="tab-dashboard" class="tab-view active">
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="kpi-label">Total Investido</div>
-            <div class="kpi-value" id="kpiTotalInvested">R$ 0,00</div>
-            <div class="kpi-sub">✓ Histórico Registrado</div>
+        <label>Descrição do Serviço *</label>
+        <input type="text" id="mDesc" placeholder="Ex: Óleo Motul 5W30 + Filtro de Óleo" required />
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div>
+            <label>Data *</label>
+            <input type="text" id="mDate" placeholder="Ex: 23 Jul, 2026" required />
           </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Média por Serviço</div>
-            <div class="kpi-value" id="kpiAvgValue">R$ 0,00</div>
-            <div class="kpi-sub">Custo médio preventivo</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Total Manutenções</div>
-            <div class="kpi-value" id="kpiTotalCount">0</div>
-            <div class="kpi-sub">Serviços na lista</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Saúde do Veículo</div>
-            <div class="kpi-value" id="kpiHealthScore" style="color: var(--accent-green);">98%</div>
-            <div class="kpi-sub">Estado de conservação</div>
-          </div>
-        </div>
-
-        <div class="chart-box">
-          <div class="chart-header">
-            <h3>Últimas Manutenções Registradas</h3>
-            <button class="btn btn-secondary" onclick="switchTab('tab-timeline')" style="padding: 6px 12px; font-size: 0.8rem;">Ver Todas</button>
-          </div>
-          <div class="timeline" id="dashboardRecentTimeline">
-            </div>
-        </div>
-      </section>
-
-      <section id="tab-finances" class="tab-view">
-        <div class="charts-grid">
-          <div class="chart-box">
-            <div class="chart-header">
-              <h3>Gastos Mensais com Manutenção</h3>
-            </div>
-            <canvas id="expensesChart" height="200"></canvas>
-          </div>
-          <div class="chart-box">
-            <div class="chart-header">
-              <h3>Gastos por Categoria</h3>
-            </div>
-            <canvas id="categoryChart" height="200"></canvas>
-          </div>
-        </div>
-      </section>
-
-      <section id="tab-timeline" class="tab-view">
-        <div class="chart-box">
-          <div class="chart-header">
-            <h3>Linha do Tempo Completa</h3>
-            <button class="btn btn-primary" id="btnOpenMaintModal2">+ Adicionar Registro</button>
-          </div>
-          <div class="timeline" id="fullTimeline">
-            </div>
-        </div>
-      </section>
-
-      <section id="tab-qrcode" class="tab-view">
-        <div class="chart-box" style="text-align: center; max-width: 500px; margin: 0 auto; padding: 40px;">
-          <h3>Passaporte Digital QR Code</h3>
-          <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 12px 0 24px;">Cole este QR Code no vidro do seu carro. Qualquer pessoa que escanear verá o prontuário público com seu histórico de cuidados.</p>
-          <div id="qrCodeContainer" style="background:#fff; padding:20px; border-radius:16px; display:inline-block;"></div>
-          <div style="margin-top: 24px;">
-            <button class="btn btn-primary" id="btnCopyQrLink" style="width: 100%; justify-content: center;">Copiar Link do Prontuário</button>
-          </div>
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <div id="maintModal" class="modal-overlay">
-    <div class="modal-card">
-      <h3 style="margin-bottom: 18px; font-size: 1.2rem;">Cadastrar Manutenção</h3>
-      <form id="maintForm">
-        <div class="form-group">
-          <label>Categoria</label>
-          <select id="mCategory" class="form-control" required>
-            <option value="Troca de Óleo">🛢️ Troca de Óleo & Filtros</option>
-            <option value="Freios">🛑 Freios & Pastilhas</option>
-            <option value="Pneus">🛞 Pneus & Alinhamento</option>
-            <option value="Suspensão">⚙️ Suspensão & Amortecedores</option>
-            <option value="Revisão">🔍 Revisão Preventiva</option>
-            <option value="Outros">🛠️ Outros Serviços</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Descrição Curta *</label>
-          <input type="text" id="mDesc" class="form-control" placeholder="Ex: Óleo 5W30 + Filtro de ar" required />
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <div class="form-group">
-            <label>Valor (R$)</label>
-            <input type="number" step="0.01" id="mValue" class="form-control" placeholder="450.00" required />
-          </div>
-          <div class="form-group">
+          <div>
             <label>Quilometragem (KM)</label>
-            <input type="number" id="mKm" class="form-control" placeholder="48500" />
+            <input type="text" id="mKm" placeholder="Ex: 45.000" />
           </div>
         </div>
-        <div class="form-group">
-          <label>Data do Serviço *</label>
-          <input type="date" id="mDate" class="form-control" required />
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <div>
+            <label>Valor Investido</label>
+            <input type="text" id="mValue" placeholder="Ex: R$ 650,00" />
+          </div>
+          <div>
+            <label>Oficina / Local</label>
+            <input type="text" id="mPlace" placeholder="Ex: Concessionária / Oficina X" />
+          </div>
         </div>
-        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px;">
-          <button type="button" class="btn btn-secondary" onclick="closeModal('maintModal')">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar no Histórico</button>
+
+        <div style="display:flex; gap:12px; margin-top:20px; justify-content:flex-end;">
+          <button type="button" id="cancelMaintenanceBtn" class="btn-secondary">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar Registro</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <div id="view-generator" class="view-section active">
+    <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; background:radial-gradient(circle at 50% 30%, rgba(0,102,255,0.18) 0%, transparent 65%);">
+      <div class="logo" style="margin-bottom:32px;"><div class="logo-dot"></div> CARPASS</div>
+      <div class="glass-panel" style="max-width:500px; width:100%; padding:40px; text-align:center;">
+        <h1 style="font-size:2.2rem; font-weight:800; margin-bottom:12px;">Gerar QR Code</h1>
+        <p style="color:var(--text-secondary); margin-bottom:32px;">Crie um QR Code exclusivo para colar ou vincular ao seu veículo.</p>
+        <button id="generateQrBtn" class="btn-primary" style="width:100%; justify-content:center; font-size:1.1rem; padding:16px;">
+          📱 Gerar Novo QR Code
+        </button>
+        <div id="qrGeneratedContainer" style="margin-top:32px; display:none;">
+          <div class="qr-display" id="qrDisplayBox"></div>
+          <p style="color:var(--text-secondary); font-size:0.85rem; margin-top:12px;">Escaneie o código acima para iniciar o cadastro ou abrir o painel.</p>
+          <button id="copyGeneratedLinkBtn" class="btn-secondary" style="margin-top:16px; width:100%; justify-content:center;">Copiar Link Direto</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-public" class="view-section">
+    <div style="max-width:1100px; margin:0 auto; padding:40px 20px 80px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
+        <div class="logo"><div class="logo-dot"></div> CARPASS <span style="font-size:0.75rem; color:var(--text-muted); font-weight:400; margin-left:8px;">| PRONTUÁRIO DIGITAL</span></div>
+        <button id="backToGeneratorBtn" class="btn-secondary">Voltar ao Gerador</button>
+      </div>
+      <div id="publicContent">
+        </div>
     </div>
   </div>
 
@@ -404,42 +407,39 @@
     (function() {
       'use strict';
 
-      // 1. Configuração Supabase
+      // ----- CONFIGURAÇÃO SUPABASE -----
       const SUPABASE_URL = 'https://mdyzyfimlkmxyishmaao.supabase.co';
       const SUPABASE_ANON_KEY = 'sb_publishable_XeZ2g0WeeP09BVbm6C4n7w_McAyCiCF';
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      // 2. Estado do Veículo & Dados
-      let currentVehicle = {
-        id: 1,
-        uuid: '123e4567-e89b-12d3-a456-426614174000',
-        name: 'Honda Civic Touring 1.5',
-        brand: 'Honda',
-        year: '2022',
-        km: '48.500 km',
-        image: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1600&q=80'
-      };
-
-      let maintenancesData = [
-        { id: 1, category: 'Troca de Óleo', description: 'Óleo Sintético 5W30 + Filtro', value: 380, km: 48500, date: '2026-06-15' },
-        { id: 2, category: 'Freios', description: 'Troca de Pastilhas Dianteiras Brembo', value: 650, km: 42000, date: '2026-03-10' },
-        { id: 3, category: 'Pneus', description: '4 Pneus Michelin + Alinhamento 3D', value: 2800, km: 35000, date: '2025-11-20' }
-      ];
-
-      let chartExpensesInstance = null;
-      let chartCategoryInstance = null;
-
-      const $ = id => document.getElementById(id);
-
-      // Toast Function
-      function showToast(msg) {
-        const t = $('toast');
-        t.innerText = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 3500);
+      let supabase;
+      if (window._supabaseClient) {
+        supabase = window._supabaseClient;
+      } else {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window._supabaseClient = supabase;
       }
 
-      // Função Auxiliar para Gerar UUID
+      // ----- DOM REFS -----
+      const $ = id => document.getElementById(id);
+      const generatorView = $('view-generator');
+      const publicView = $('view-public');
+      const publicContent = $('publicContent');
+      const backToGeneratorBtn = $('backToGeneratorBtn');
+      const toast = $('toast');
+      const toastMsg = $('toast-message');
+
+      // ----- TOAST -----
+      function triggerToast(msg, isError = false) {
+        toastMsg.innerText = msg;
+        toast.style.borderColor = isError ? '#ff4444' : 'var(--accent-electric)';
+        toast.classList.add('show');
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 4000);
+      }
+
+      // ----- GERAR UUID -----
       function generateUUID() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
           const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -447,305 +447,368 @@
         });
       }
 
-      // Alternar Abas
-      window.switchTab = function(tabId) {
-        document.querySelectorAll('.tab-view').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        
-        $(tabId).classList.add('active');
-        document.querySelector(`[data-tab="${tabId}"]`)?.classList.add('active');
+      // ----- GERAR QR CODE -----
+      function generateAndShowQR() {
+        const uuid = generateUUID();
+        const targetUrl = window.location.origin + window.location.pathname + '?id=' + uuid;
 
-        if (tabId === 'tab-finances') renderCharts();
-      };
+        const container = $('qrGeneratedContainer');
+        const qrDisplay = $('qrDisplayBox');
+        qrDisplay.innerHTML = ''; 
 
-      document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', () => switchTab(item.dataset.tab));
-      });
+        if (window.QRCode) {
+          new QRCode(qrDisplay, {
+            text: targetUrl,
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+          });
+        }
 
-      // Calcular Métricas
-      function calculateMetrics() {
-        const total = maintenancesData.reduce((acc, curr) => acc + Number(curr.value || 0), 0);
-        const count = maintenancesData.length;
-        const avg = count > 0 ? total / count : 0;
-
-        $('kpiTotalInvested').innerText = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        $('kpiAvgValue').innerText = `R$ ${avg.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        $('kpiTotalCount').innerText = count;
-        
-        const healthScore = Math.min(99, 70 + (count * 4));
-        $('kpiHealthScore').innerText = `${healthScore}%`;
+        qrDisplay.dataset.url = targetUrl;
+        container.style.display = 'block';
+        triggerToast('QR Code criado! Escaneie para vincular.');
       }
 
-      // Renderizar Linha do Tempo
-      function renderTimelines() {
-        const renderItem = m => `
-          <div class="timeline-item">
-            <div class="timeline-content">
-              <div>
-                <strong style="color:var(--text-primary); font-size:0.95rem;">${m.category} - ${m.description}</strong>
-                <p style="color:var(--text-muted); font-size:0.8rem; margin-top:4px;">
-                  📅 ${m.date} ${m.km ? '• 📍 ' + m.km + ' km' : ''}
-                </p>
-              </div>
-              <span style="background:rgba(16,185,129,0.15); color:var(--accent-green); padding:6px 12px; border-radius:20px; font-weight:700; font-size:0.85rem;">
-                R$ ${Number(m.value).toLocaleString('pt-BR', {minimumFractionDigits:2})}
-              </span>
-            </div>
-          </div>
-        `;
-
-        const html = maintenancesData.map(renderItem).join('') || '<p style="color:var(--text-muted);">Nenhuma manutenção registrada.</p>';
-        $('dashboardRecentTimeline').innerHTML = html;
-        $('fullTimeline').innerHTML = html;
-      }
-
-      // Renderizar Gráficos Chart.js
-      function renderCharts() {
-        if (chartExpensesInstance) chartExpensesInstance.destroy();
-        if (chartCategoryInstance) chartCategoryInstance.destroy();
-
-        const categories = {};
-        maintenancesData.forEach(m => {
-          categories[m.category] = (categories[m.category] || 0) + Number(m.value);
-        });
-
-        const ctxExp = $('expensesChart').getContext('2d');
-        chartExpensesInstance = new Chart(ctxExp, {
-          type: 'line',
-          data: {
-            labels: maintenancesData.map(m => m.date).reverse(),
-            datasets: [{
-              label: 'Valor Gasto (R$)',
-              data: maintenancesData.map(m => m.value).reverse(),
-              borderColor: '#0066ff',
-              backgroundColor: 'rgba(0, 102, 255, 0.1)',
-              fill: true,
-              tension: 0.3
-            }]
-          },
-          options: { responsive: true, plugins: { legend: { display: false } } }
-        });
-
-        const ctxCat = $('categoryChart').getContext('2d');
-        chartCategoryInstance = new Chart(ctxCat, {
-          type: 'doughnut',
-          data: {
-            labels: Object.keys(categories),
-            datasets: [{
-              data: Object.values(categories),
-              backgroundColor: ['#0066ff', '#10b981', '#f59e0b', '#8b5cf6', '#00f2fe']
-            }]
-          },
-          options: { responsive: true }
+      // ----- COPIAR LINK -----
+      function copyGeneratedLink() {
+        const qrDisplay = $('qrDisplayBox');
+        const url = qrDisplay?.dataset.url || window.location.href;
+        navigator.clipboard?.writeText(url).then(() => {
+          triggerToast('Link copiado!');
+        }).catch(() => {
+          prompt('Copie o link abaixo:', url);
         });
       }
 
-      // QR Code com URL Inteligente baseada no UUID
-      function initQrCode(uuid) {
-        const qrContainer = $('qrCodeContainer');
-        qrContainer.innerHTML = '';
-        const publicUrl = `${window.location.origin}${window.location.pathname}?id=${uuid}`;
-        
-        new QRCode(qrContainer, {
-          text: publicUrl,
-          width: 180,
-          height: 180
-        });
-
-        $('btnCopyQrLink').onclick = () => {
-          navigator.clipboard.writeText(publicUrl);
-          showToast('Link do Prontuário copiado com sucesso!');
-        };
-      }
-
-      // Carregar Veículo por UUID via Supabase
+      // ----- BUSCAR NO SUPABASE -----
       async function loadVehicleByUuid(uuid) {
         try {
           const { data, error } = await supabase
             .from('vehicles')
             .select('*, maintenances(*)')
             .eq('uuid', uuid)
-            .single();
+            .maybeSingle();
 
-          if (error || !data) return null;
+          if (error) {
+            console.error('Erro na busca:', error);
+            return null;
+          }
           return data;
-        } catch (e) {
+        } catch (err) {
           return null;
         }
       }
 
-      // Renderizar a Página Pública do Prontuário ou Formulário de Cadastro do QR Code
-      async function handlePublicRoute(uuid) {
-        $('app-container').style.display = 'none';
-        $('public-view').classList.add('active');
+      // ----- RENDERIZAR TELA DE VEÍCULO -----
+      async function renderPublic() {
+        const params = new URLSearchParams(window.location.search);
+        const uuid = params.get('id');
 
-        const vehicle = await loadVehicleByUuid(uuid);
+        if (!uuid) {
+          document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+          generatorView.classList.add('active');
+          return;
+        }
 
-        if (!vehicle) {
-          // UUID NOVO: Abre Form de Novo Usuário/Veículo vinculado a esse QR Code
-          $('publicContent').innerHTML = `
-            <div class="chart-box" style="max-width: 500px; margin: 0 auto; padding: 32px;">
-              <h2 style="font-size:1.4rem; font-weight:800; margin-bottom:8px;">Ativar Tag QR Code</h2>
-              <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:24px;">Este QR Code ainda não possui um veículo vinculado. Crie sua conta e vincule seu carro abaixo.</p>
-              <form id="publicRegisterForm">
-                <div class="form-group">
-                  <label>E-mail do Proprietário *</label>
-                  <input type="email" id="pEmail" class="form-control" placeholder="seu@email.com" required />
-                </div>
-                <div class="form-group">
-                  <label>Senha de Acesso *</label>
-                  <input type="password" id="pPass" class="form-control" placeholder="••••••••" required />
-                </div>
-                <hr style="border-color:var(--border-color); margin: 20px 0;" />
-                <div class="form-group">
-                  <label>Nome do Veículo *</label>
-                  <input type="text" id="pVName" class="form-control" placeholder="Ex: Honda Civic Touring" required />
-                </div>
-                <div class="form-group">
-                  <label>Marca *</label>
-                  <input type="text" id="pVBrand" class="form-control" placeholder="Ex: Honda" required />
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                  <div class="form-group">
+        publicContent.innerHTML = '<div style="text-align:center; padding:60px; color:var(--text-secondary);">Buscando histórico do veículo...</div>';
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        publicView.classList.add('active');
+
+        const vehicleData = await loadVehicleByUuid(uuid);
+
+        // -------------------------------------------------------------
+        // CASO A: QR CODE NÃO CADASTRADO -> FORMULÁRIO DE CADASTRO
+        // -------------------------------------------------------------
+        if (!vehicleData) {
+          publicContent.innerHTML = `
+            <div class="glass-panel" style="max-width:520px; margin:0 auto; padding:40px;">
+              <h2 style="font-size:1.6rem; font-weight:700; text-align:center; margin-bottom:8px;">Ativar Novo CarPass</h2>
+              <p style="color:var(--text-secondary); text-align:center; margin-bottom:24px; font-size:0.9rem;">
+                Este QR Code é novo. Cadastre seu veículo para gerar seu histórico digital.
+              </p>
+              <form id="publicVehicleForm">
+                <label>E-mail do Proprietário *</label>
+                <input type="email" id="publicAuthEmail" placeholder="seu@email.com" required />
+                
+                <label>Senha de Acesso *</label>
+                <input type="password" id="publicAuthPassword" placeholder="••••••••" required />
+                
+                <hr style="border-color:var(--border-subtle); margin:20px 0;" />
+                
+                <label>Nome / Modelo *</label>
+                <input type="text" id="publicVName" placeholder="Ex: Civic Touring 1.5 Turbo" required />
+                
+                <label>Marca *</label>
+                <input type="text" id="publicVBrand" placeholder="Ex: Honda" required />
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                  <div>
                     <label>Ano</label>
-                    <input type="text" id="pVYear" class="form-control" placeholder="2022" />
+                    <input type="text" id="publicVYear" placeholder="Ex: 2021" />
                   </div>
-                  <div class="form-group">
-                    <label>Quilometragem</label>
-                    <input type="text" id="pVKm" class="form-control" placeholder="48.500 km" />
+                  <div>
+                    <label>Quilometragem Atual</label>
+                    <input type="text" id="publicVKm" placeholder="Ex: 48.500 km" />
                   </div>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:12px;">Cadastrar & Ativar Tag</button>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                  <div>
+                    <label>Motor</label>
+                    <input type="text" id="publicVEngine" placeholder="Ex: 1.5 Turbo" />
+                  </div>
+                  <div>
+                    <label>Potência (CV)</label>
+                    <input type="text" id="publicVPower" placeholder="Ex: 173 CV" />
+                  </div>
+                </div>
+                
+                <label>Câmbio</label>
+                <input type="text" id="publicVTransmission" placeholder="Ex: CVT 7 Marchas" />
+                
+                <label>URL da Imagem do Veículo (opcional)</label>
+                <input type="text" id="publicVImage" placeholder="https://exemplo.com/foto.jpg" />
+                
+                <button type="submit" id="publicSubmitBtn" class="btn-primary" style="width:100%; margin-top:20px; justify-content:center;">
+                  Cadastrar e Vincular QR Code
+                </button>
               </form>
             </div>
           `;
 
-          $('publicRegisterForm').onsubmit = async (e) => {
+          const form = $('publicVehicleForm');
+          const submitBtn = $('publicSubmitBtn');
+
+          form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = $('pEmail').value;
-            const password = $('pPass').value;
-            const name = $('pVName').value;
-            const brand = $('pVBrand').value;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Gravando...';
+
+            const email = $('publicAuthEmail').value.trim();
+            const password = $('publicAuthPassword').value.trim();
 
             try {
-              const { data: authData, error: authErr } = await supabase.auth.signUp({ email, password });
-              if (authErr) throw authErr;
+              let userId = null;
+              const { data: signInData } = await supabase.auth.signInWithPassword({ email, password });
+              if (signInData && signInData.user) {
+                userId = signInData.user.id;
+              } else {
+                const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+                if (signUpError) throw new Error(signUpError.message);
+                userId = signUpData.user?.id;
+              }
 
-              const { error: insertErr } = await supabase.from('vehicles').insert([{
-                uuid: uuid,
-                user_id: authData.user.id,
-                name: name,
-                brand: brand,
-                year: $('pVYear').value,
-                km: $('pVKm').value
-              }]);
+              if (!userId) throw new Error('Erro na autenticação.');
 
-              if (insertErr) throw insertErr;
+              const { error: insertError } = await supabase
+                .from('vehicles')
+                .insert([{
+                  uuid: uuid,
+                  user_id: userId,
+                  name: $('publicVName').value.trim(),
+                  brand: $('publicVBrand').value.trim(),
+                  year: $('publicVYear').value.trim(),
+                  km: $('publicVKm').value.trim(),
+                  power: $('publicVPower').value.trim(),
+                  engine: $('publicVEngine').value.trim(),
+                  transmission: $('publicVTransmission').value.trim(),
+                  image: $('publicVImage').value.trim()
+                }]);
 
-              showToast('Veículo e conta ativados com sucesso!');
-              setTimeout(() => window.location.reload(), 1500);
-            } catch(err) {
-              showToast('Erro: ' + err.message);
+              if (insertError) throw new Error(insertError.message);
+
+              triggerToast('Veículo ativado com sucesso!');
+              setTimeout(() => { window.location.reload(); }, 1200);
+
+            } catch (err) {
+              triggerToast('Erro: ' + err.message, true);
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Cadastrar e Vincular QR Code';
             }
-          };
+          });
 
-        } else {
-          // UUID EXISTENTE: Renderiza o Prontuário Público Verificado
-          const maints = vehicle.maintenances || [];
-          const maintsHtml = maints.map(m => `
-            <div class="timeline-item">
-              <div class="timeline-content">
-                <div>
-                  <strong style="color:#fff;">${m.description}</strong>
-                  <p style="color:var(--text-muted); font-size:0.8rem; margin-top:4px;">📅 ${m.date} ${m.place ? '• 📍 ' + m.place : ''}</p>
-                </div>
-                ${m.value ? `<span style="color:var(--accent-green); font-weight:700;">R$ ${m.value}</span>` : ''}
-              </div>
-            </div>
-          `).join('') || '<p style="color:var(--text-muted);">Nenhuma manutenção registrada publicamente.</p>';
-
-          $('publicContent').innerHTML = `
-            <div class="public-hero" style="background-image: url('${vehicle.image || currentVehicle.image}');">
-              <div class="public-overlay">
-                <span style="background:rgba(0,102,255,0.2); color:var(--accent-cyan); border:1px solid rgba(0,102,255,0.4); padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; width:fit-content; margin-bottom:8px;">
-                  PRONTUÁRIO PÚBLICO VERIFICADO
-                </span>
-                <h1 style="font-size:2.2rem; font-weight:800;">${vehicle.name}</h1>
-                <p style="color:var(--text-secondary);">${vehicle.brand} • ${vehicle.year || ''} • ${vehicle.km || ''}</p>
-              </div>
-            </div>
-
-            <div class="chart-box">
-              <h3 style="margin-bottom:16px;">Linha do Tempo de Cuidados</h3>
-              <div class="timeline">${maintsHtml}</div>
-            </div>
-          `;
+          backToGeneratorBtn.onclick = () => { window.location.href = window.location.origin + window.location.pathname; };
+          return;
         }
+
+        // -------------------------------------------------------------
+        // CASO B: VEÍCULO CADASTRADO -> PAINEL PROFISSIONAL
+        // -------------------------------------------------------------
+        const v = vehicleData;
+        const maints = v.maintenances || [];
+
+        // Encontrar última troca de óleo
+        const lastOleo = maints.slice().reverse().find(m => m.description?.toLowerCase().includes('óleo') || m.description?.toLowerCase().includes('oleo'));
+
+        // Renderizar Lista da Timeline
+        const maintListHTML = maints.map(m => `
+          <div class="timeline-node">
+            <div class="timeline-card">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                <div>
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <span class="badge badge-blue">${m.description.startsWith('🛢️') || m.description.startsWith('🛑') || m.description.startsWith('🛞') || m.description.startsWith('⚙️') || m.description.startsWith('🔋') || m.description.startsWith('🔍') ? m.description.split(' ')[0] + ' Serviço' : '🔧 Serviço'}</span>
+                    <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} ${m.place ? '• ' + m.place : ''}</span>
+                  </div>
+                  <h4 style="font-size:1.1rem; font-weight:700; margin-top:2px;">${m.description}</h4>
+                  ${m.km ? `<p style="color:var(--text-secondary); font-size:0.85rem; margin-top:4px;">📍 Realizado em: <strong>${m.km} km</strong></p>` : ''}
+                </div>
+                ${m.value ? `<span class="badge badge-green" style="font-size:0.9rem;">${m.value}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        `).join('') || '<p style="color:var(--text-muted); padding:20px 0;">Nenhuma manutenção registrada ainda. Clique em "Registrar Manutenção" para adicionar.</p>';
+
+        publicContent.innerHTML = `
+          <div class="glow-card" style="margin-bottom:32px; padding:0; overflow:hidden;">
+            <div style="height:360px; width:100%; background-size:cover; background-position:center; background-image:url('${v.image || 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1600&q=80'}'); position:relative;">
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(5,5,8,0.1) 0%, var(--bg-card) 100%);"></div>
+              <div style="position:absolute; bottom:28px; left:28px; right:28px; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;">
+                <div>
+                  <div class="badge badge-green" style="margin-bottom:10px;">✓ HISTÓRICO VERIFICADO</div>
+                  <h1 style="font-size:2.6rem; font-weight:800; letter-spacing:-0.03em; line-height:1.1;">${v.name}</h1>
+                  <p style="color:var(--text-secondary); font-size:1rem; margin-top:6px;">${v.brand} ${v.year ? '• ' + v.year : ''} ${v.km ? '• ' + v.km : ''}</p>
+                </div>
+                <div>
+                  <button id="addMaintBtn" class="btn-primary">+ Registrar Manutenção</button>
+                </div>
+              </div>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr)); gap:1px; background:var(--border-subtle); padding-top:1px;">
+              <div style="background:var(--bg-card); padding:16px; text-align:center;"><p style="color:var(--text-muted); font-size:0.7rem;">MARCA</p><p style="font-weight:700; font-size:1rem;">${v.brand}</p></div>
+              <div style="background:var(--bg-card); padding:16px; text-align:center;"><p style="color:var(--text-muted); font-size:0.7rem;">ANO</p><p style="font-weight:700; font-size:1rem;">${v.year || '-'}</p></div>
+              <div style="background:var(--bg-card); padding:16px; text-align:center;"><p style="color:var(--text-muted); font-size:0.7rem;">KM ATUAL</p><p style="font-weight:700; font-size:1rem;">${v.km || '-'}</p></div>
+              <div style="background:var(--bg-card); padding:16px; text-align:center;"><p style="color:var(--text-muted); font-size:0.7rem;">MOTOR</p><p style="font-weight:700; font-size:1rem;">${v.engine || '-'}</p></div>
+              <div style="background:var(--bg-card); padding:16px; text-align:center;"><p style="color:var(--text-muted); font-size:0.7rem;">POTÊNCIA</p><p style="font-weight:700; font-size:1rem;">${v.power || '-'}</p></div>
+              <div style="background:var(--bg-card); padding:16px; text-align:center;"><p style="color:var(--text-muted); font-size:0.7rem;">CÂMBIO</p><p style="font-weight:700; font-size:1rem;">${v.transmission || '-'}</p></div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>🛢️ TROCA DE ÓLEO</span>
+                <span class="badge badge-blue">PREVENTIVA</span>
+              </div>
+              <div class="stat-value" style="font-size:1.2rem; margin:8px 0;">
+                ${lastOleo ? lastOleo.date : 'Não registrada'}
+              </div>
+              <div class="stat-sub">
+                ${lastOleo && lastOleo.km ? 'Feita com: ' + lastOleo.km + ' km' : 'Recomendado a cada 10.000 km ou 1 ano'}
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>📋 TOTAL REGISTROS</span>
+                <span class="badge badge-green">HISTÓRICO</span>
+              </div>
+              <div class="stat-value">${maints.length}</div>
+              <div class="stat-sub">Serviços e manutenções salvos</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>🛡️ STATUS DO VEÍCULO</span>
+                <span class="badge badge-green">OK</span>
+              </div>
+              <div class="stat-value" style="font-size:1.2rem; color:var(--accent-emerald); margin:8px 0;">
+                Em Dia
+              </div>
+              <div class="stat-sub">Prontuário sem alertas críticos</div>
+            </div>
+          </div>
+
+          <div class="glow-card" style="padding:32px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+              <div>
+                <h3 style="font-size:1.3rem; font-weight:700;">Linha do Tempo de Manutenções</h3>
+                <p style="color:var(--text-secondary); font-size:0.85rem; margin-top:4px;">Histórico cronológico de serviços executados neste veículo.</p>
+              </div>
+            </div>
+            <div class="timeline">${maintListHTML}</div>
+          </div>
+        `;
+
+        // ABRIR MODAL DE REGISTRO DE MANUTENÇÃO
+        $('addMaintBtn')?.addEventListener('click', () => {
+          $('maintenanceVehicleId').value = v.id;
+          $('maintenanceForm').reset();
+          $('maintenanceFormModal').classList.add('active');
+        });
+
+        backToGeneratorBtn.onclick = () => { window.location.href = window.location.origin + window.location.pathname; };
       }
 
-      // Modais Handlers
-      window.closeModal = id => $(id).classList.remove('active');
-      $('btnOpenMaintModal').onclick = () => $('maintModal').classList.add('active');
-      $('btnOpenMaintModal2').onclick = () => $('maintModal').classList.add('active');
-
-      // Botão Rápido: Troca de Óleo
-      $('btnQuickOil').onclick = () => {
-        const today = new Date().toISOString().split('T')[0];
-        maintenancesData.unshift({
-          id: Date.now(),
-          category: 'Troca de Óleo',
-          description: 'Troca Rápida de Óleo e Filtro Lubrificante',
-          value: 350,
-          km: 49000,
-          date: today
-        });
-        updateApp();
-        showToast('Troca de Óleo rápida adicionada!');
-      };
-
-      // Formulário de Manutenção
-      $('maintForm').onsubmit = (e) => {
+      // ----- SUBMETER NOVA MANUTENÇÃO -----
+      $('maintenanceForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        const newMaint = {
-          id: Date.now(),
-          category: $('mCategory').value,
-          description: $('mDesc').value,
-          value: parseFloat($('mValue').value),
-          km: $('mKm').value ? parseInt($('mKm').value) : null,
-          date: $('mDate').value
+        const vehicleId = $('maintenanceVehicleId').value;
+        const category = $('mCategory').value;
+        const descText = $('mDesc').value.trim();
+        const kmValue = $('mKm').value.trim();
+
+        const fullDescription = `${category.split(' ')[0]} ${descText}`;
+
+        const data = {
+          vehicle_id: parseInt(vehicleId),
+          date: $('mDate').value.trim(),
+          description: fullDescription,
+          value: $('mValue').value.trim(),
+          place: $('mPlace').value.trim(),
+          km: kmValue
         };
 
-        maintenancesData.unshift(newMaint);
-        updateApp();
-        closeModal('maintModal');
-        $('maintForm').reset();
-        showToast('Nova manutenção salva com sucesso!');
-      };
+        try {
+          const { error } = await supabase.from('maintenances').insert([data]);
+          if (error) throw error;
 
-      // Atualização Geral
-      function updateApp() {
-        $('vehicleTitleDisplay').innerText = currentVehicle.name;
-        $('vehicleSubDisplay').innerText = `Marca: ${currentVehicle.brand} • Ano: ${currentVehicle.year} • KM: ${currentVehicle.km}`;
-        calculateMetrics();
-        renderTimelines();
-      }
+          // Atualizar KM do veículo se informado
+          if (kmValue) {
+            await supabase.from('vehicles').update({ km: kmValue + ' km' }).eq('id', vehicleId);
+          }
 
-      // Inicialização da Aplicação
+          triggerToast('Manutenção registrada com sucesso!');
+          $('maintenanceFormModal').classList.remove('active');
+          renderPublic();
+        } catch (err) {
+          triggerToast('Erro: ' + err.message, true);
+        }
+      });
+
+      $('cancelMaintenanceBtn').addEventListener('click', () => {
+        $('maintenanceFormModal').classList.remove('active');
+      });
+
+      // ----- INICIALIZAÇÃO -----
       function init() {
-        const params = new URLSearchParams(window.location.search);
-        const uuidParam = params.get('id');
+        $('generateQrBtn')?.addEventListener('click', generateAndShowQR);
+        $('copyGeneratedLinkBtn')?.addEventListener('click', copyGeneratedLink);
 
-        if (uuidParam) {
-          handlePublicRoute(uuidParam);
+        document.querySelectorAll('.modal-overlay').forEach(el => {
+          el.addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+          });
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('id')) {
+          renderPublic();
         } else {
-          updateApp();
-          initQrCode(currentVehicle.uuid);
-          $('mDate').value = new Date().toISOString().split('T')[0];
+          document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+          generatorView.classList.add('active');
         }
       }
 
-      init();
-
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
     })();
   </script>
 </body>
