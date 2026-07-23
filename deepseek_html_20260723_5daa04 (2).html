@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CarPass | O Histórico Digital do Seu Veículo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* ===== RESET E VARIÁVEIS ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    :root {
+      --bg-dark: #050505;
+      --bg-card: #0b0b0b;
+      --bg-surface: #181818;
+      --bg-surface-elevated: #222;
+      --border-subtle: rgba(255,255,255,0.07);
+      --border-medium: rgba(255,255,255,0.15);
+      --text-primary: #fff;
+      --text-secondary: #8e8e93;
+      --text-muted: #55555e;
+      --accent-electric: #0066ff;
+      --accent-cyan: #00d2ff;
+      --accent-emerald: #10b981;
+      --glass-bg: rgba(15,15,15,0.7);
+      --glass-border: rgba(255,255,255,0.08);
+      --shadow-premium: 0 30px 60px rgba(0,0,0,0.9);
+      --transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+    }
+    body {
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-dark); }
+    ::-webkit-scrollbar-thumb { background: var(--bg-surface-elevated); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-electric); }
+
+    /* ===== UTILITÁRIOS ===== */
+    .glass-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+    }
+    .glow-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: var(--transition);
+    }
+    .glow-card::before {
+      content: '';
+      position: absolute;
+      top: var(--mouse-y, 50%);
+      left: var(--mouse-x, 50%);
+      transform: translate(-50%, -50%);
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(0,102,255,0.35) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .glow-card:hover::before { opacity: 1; }
+    .glow-card:hover {
+      border-color: rgba(255,255,255,0.2);
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-electric), #0044b3);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 20px rgba(0,102,255,0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 8px 30px rgba(0,102,255,0.6);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-primary);
+      border: 1px solid var(--border-medium);
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+    }
+    .btn-danger {
+      background: rgba(255, 50, 50, 0.15);
+      color: #ff4444;
+      border: 1px solid rgba(255,50,50,0.2);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .btn-danger:hover { background: rgba(255,50,50,0.3); }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-blue { background: rgba(0,102,255,0.15); color: var(--accent-cyan); border: 1px solid rgba(0,102,255,0.3); }
+    .badge-green { background: rgba(16,185,129,0.15); color: var(--accent-emerald); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-gray { background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-subtle); }
+
+    /* ===== VIEW SYSTEM ===== */
+    .view-section { display: none; animation: fadeIn 0.4s ease forwards; }
+    .view-section.active { display: block; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ===== TOP NAV ===== */
+    .top-nav {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 1200px;
+      padding: 14px 28px;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+    }
+    .logo {
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.04em;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .logo-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-electric);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-electric);
+    }
+
+    /* ===== SIDEBAR ===== */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      width: 260px;
+      background: #080808;
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 16px;
+      position: fixed;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      z-index: 100;
+    }
+    .sidebar-menu {
+      margin-top: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      list-style: none;
+    }
+    .sidebar-item {
+      padding: 12px 16px;
+      border-radius: 10px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: var(--transition);
+    }
+    .sidebar-item:hover, .sidebar-item.active {
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.05);
+    }
+    .sidebar-item.active {
+      background: rgba(0,102,255,0.12);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0,102,255,0.2);
+    }
+    .sidebar-item svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+    .main-content {
+      margin-left: 260px;
+      flex: 1;
+      padding: 32px 40px;
+      max-width: 1400px;
+    }
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-electric), #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.85rem;
+      border: 2px solid var(--border-medium);
+      cursor: pointer;
+    }
+
+    /* ===== CARDS & GRIDS ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .stat-card { padding: 24px; }
+    .stat-card .label { color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card .value { font-size: 1.8rem; font-weight: 700; margin-top: 8px; }
+    .stat-card .subtext { color: var(--accent-emerald); font-size: 0.8rem; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+
+    .vehicle-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+    }
+    .vehicle-card {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .vehicle-img-wrapper {
+      height: 200px;
+      width: 100%;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    .vehicle-img-wrapper::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 40%, var(--bg-card) 100%);
+    }
+    .vehicle-card-content {
+      padding: 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      z-index: 2;
+    }
+    .vehicle-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 12px;
+    }
+
+    /* ===== TIMELINE ===== */
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+      margin-top: 24px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border-subtle);
+    }
+    .timeline-node {
+      position: relative;
+      margin-bottom: 32px;
+    }
+    .timeline-node::before {
+      content: '';
+      position: absolute;
+      left: -27px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent-electric);
+      box-shadow: 0 0 12px var(--accent-electric);
+      border: 2px solid var(--bg-dark);
+    }
+    .timeline-card {
+      padding: 20px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+    }
+
+    /* ===== DOCS ===== */
+    .doc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .doc-card {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+    }
+    .doc-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: rgba(0,102,255,0.1);
+      color: var(--accent-electric);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: 20px;
+      max-width: 500px;
+      width: 100%;
+      padding: 32px;
+      position: relative;
+      animation: modalUp 0.3s ease;
+    }
+    @keyframes modalUp {
+      from { transform: translateY(30px) scale(0.95); opacity:0; }
+      to { transform: translateY(0) scale(1); opacity:1; }
+    }
+
+    .modal-content input, .modal-content textarea, .modal-content select {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: #fff;
+      outline: none;
+      font-size: 0.9rem;
+    }
+    .modal-content label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      display: block;
+      margin-bottom: 6px;
+      margin-top: 12px;
+    }
+
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--accent-electric);
+      color: #fff;
+      padding: 14px 24px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-premium);
+      z-index: 3000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ===== TRUST CIRCLE ===== */
+    .trust-circle-container {
+      position: relative;
+      width: 140px;
+      height: 140px;
+    }
+    .trust-circle-svg {
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
+    }
+    .trust-circle-bg { fill: none; stroke: var(--bg-surface-elevated); stroke-width: 10; }
+    .trust-circle-progress {
+      fill: none;
+      stroke: var(--accent-electric);
+      stroke-width: 10;
+      stroke-dasharray: 377;
+      stroke-dashoffset: 20;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1.5s ease;
+      filter: drop-shadow(0 0 8px var(--accent-electric));
+    }
+    .trust-score-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 800;
+    }
+    .trust-score-text span { font-size: 0.7rem; color: var(--text-secondary); font-weight: 500; margin-top: -4px; }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+      gap: 16px;
+    }
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      stroke: var(--text-muted);
+      stroke-width: 1.5;
+      fill: none;
+    }
+    .empty-state h2 { font-size: 1.8rem; font-weight: 700; }
+    .empty-state p { color: var(--text-secondary); max-width: 400px; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .sidebar { width: 70px; padding: 16px 8px; }
+      .sidebar-item span { display: none; }
+      .sidebar-item { justify-content: center; padding: 12px; }
+      .main-content { margin-left: 70px; padding: 20px; }
+      .header-bar { flex-wrap: wrap; gap: 12px; }
+      .top-nav { width: 95%; padding: 10px 16px; flex-wrap: wrap; gap: 8px; }
+      .top-nav .btn-primary, .top-nav .btn-secondary { padding: 6px 12px; font-size: 0.75rem; }
+      .vehicle-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== TOAST ===== -->
+  <div id="toast" class="toast">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <span id="toast-message">Sucesso!</span>
+  </div>
+
+  <!-- ===== MODAL QR CODE ===== -->
+  <div id="qrModal" class="modal-overlay">
+    <div class="modal-content text-center">
+      <h3 style="font-size:1.4rem; margin-bottom:8px;">QR Code do Veículo</h3>
+      <p style="color:var(--text-secondary); margin-bottom:24px; font-size:0.85rem;">Escaneie para acessar o histórico público.</p>
+      <div id="qrCodeContainer" style="background:#fff; padding:20px; border-radius:16px; display:inline-block; margin-bottom:24px;">
+        <canvas id="qrCanvas" width="200" height="200"></canvas>
+      </div>
+      <div style="display:flex; gap:12px; justify-content:center;">
+        <button id="copyLinkBtn" class="btn-primary">Copiar Link</button>
+        <button id="closeQrBtn" class="btn-secondary">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL ADICIONAR/EDITAR VEÍCULO ===== -->
+  <div id="vehicleFormModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 id="vehicleFormTitle" style="font-size:1.4rem; margin-bottom:16px;">Novo Veículo</h3>
+      <form id="vehicleForm">
+        <input type="hidden" id="editVehicleId" value="" />
+        <label>Nome do Veículo *</label>
+        <input type="text" id="vName" placeholder="Ex: 911 GT3 RS" required />
+        <label>Marca *</label>
+        <input type="text" id="vBrand" placeholder="Ex: Porsche" required />
+        <label>Ano</label>
+        <input type="text" id="vYear" placeholder="2023" />
+        <label>Quilometragem</label>
+        <input type="text" id="vKm" placeholder="12.450 km" />
+        <label>Potência (CV)</label>
+        <input type="text" id="vPower" placeholder="525 CV" />
+        <label>Motor</label>
+        <input type="text" id="vEngine" placeholder="4.0 Boxer" />
+        <label>Câmbio</label>
+        <input type="text" id="vTransmission" placeholder="PDK 7 marchas" />
+        <label>URL da Imagem (opcional)</label>
+        <input type="text" id="vImage" placeholder="https://exemplo.com/foto.jpg" />
+        <div style="display:flex; gap:12px; margin-top:20px; justify-content:flex-end;">
+          <button type="button" id="cancelVehicleBtn" class="btn-secondary">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL ADICIONAR MANUTENÇÃO ===== -->
+  <div id="maintenanceFormModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="font-size:1.4rem; margin-bottom:16px;">Adicionar Manutenção</h3>
+      <form id="maintenanceForm">
+        <input type="hidden" id="maintenanceVehicleId" value="" />
+        <label>Data</label>
+        <input type="text" id="mDate" placeholder="Ex: 12 Out, 2025" required />
+        <label>Descrição *</label>
+        <input type="text" id="mDesc" placeholder="Troca de óleo" required />
+        <label>Valor (opcional)</label>
+        <input type="text" id="mValue" placeholder="R$ 1.200" />
+        <label>Oficina / Local</label>
+        <input type="text" id="mPlace" placeholder="Concessionária Stuttgart" />
+        <div style="display:flex; gap:12px; margin-top:20px; justify-content:flex-end;">
+          <button type="button" id="cancelMaintenanceBtn" class="btn-secondary">Cancelar</button>
+          <button type="submit" class="btn-primary">Adicionar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ===== VIEW 1: LOGIN / CADASTRO ===== -->
+  <!-- ============================================================== -->
+  <div id="view-auth" class="view-section active">
+    <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; background:radial-gradient(circle at 50% 50%, rgba(0,102,255,0.1) 0%, transparent 70%);">
+      <div class="glass-panel" style="width:100%; max-width:420px; padding:40px; text-align:center;">
+        <div class="logo" style="justify-content:center; margin-bottom:24px;"><div class="logo-dot"></div> CARPASS</div>
+        <h2 id="authTitle" style="font-size:1.6rem; font-weight:700; margin-bottom:8px;">Bem-vindo</h2>
+        <p id="authSub" style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:32px;">Faça login ou crie sua conta</p>
+
+        <form id="authForm" style="display:flex; flex-direction:column; gap:16px; text-align:left;">
+          <div>
+            <label style="font-size:0.8rem; color:var(--text-secondary); display:block; margin-bottom:6px;">E-mail</label>
+            <input type="email" id="authEmail" placeholder="seu@email.com" style="width:100%; background:var(--bg-surface); border:1px solid var(--border-subtle); padding:12px 16px; border-radius:8px; color:#fff; outline:none;" required />
+          </div>
+          <div>
+            <label style="font-size:0.8rem; color:var(--text-secondary); display:block; margin-bottom:6px;">Senha</label>
+            <input type="password" id="authPassword" placeholder="••••••••" style="width:100%; background:var(--bg-surface); border:1px solid var(--border-subtle); padding:12px 16px; border-radius:8px; color:#fff; outline:none;" required />
+          </div>
+          <button type="submit" id="authButton" class="btn-primary" style="justify-content:center; width:100%; margin-top:8px;">Entrar</button>
+        </form>
+
+        <div style="margin:20px 0; display:flex; align-items:center; color:var(--text-muted); font-size:0.8rem;">
+          <div style="flex:1; height:1px; background:var(--border-subtle);"></div>
+          <span style="padding:0 12px;">OU</span>
+          <div style="flex:1; height:1px; background:var(--border-subtle);"></div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <button type="button" id="toggleAuthBtn" class="btn-secondary" style="justify-content:center; font-size:0.85rem;">Criar conta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ===== APP CONTAINER (com Sidebar) ===== -->
+  <!-- ============================================================== -->
+  <div id="app-container" style="display:none;">
+    <div class="app-layout">
+      <aside class="sidebar">
+        <div class="logo"><div class="logo-dot"></div> CARPASS</div>
+        <ul class="sidebar-menu">
+          <li class="sidebar-item active" data-view="view-dashboard">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>Dashboard</span>
+          </li>
+          <li class="sidebar-item" data-view="view-vehicles">
+            <svg viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 1 12.4V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+            <span>Meus Veículos</span>
+          </li>
+          <li class="sidebar-item" data-view="view-timeline">
+            <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span>Timeline</span>
+          </li>
+          <li class="sidebar-item" data-view="view-documents">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>Documentos</span>
+          </li>
+          <li class="sidebar-item" data-view="view-public">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span>Visão Pública</span>
+          </li>
+        </ul>
+        <div style="margin-top:auto; padding-top:20px; border-top:1px solid var(--border-subtle);">
+          <div id="logoutBtn" style="display:flex; align-items:center; gap:12px; cursor:pointer;">
+            <div class="avatar" id="userAvatar">U</div>
+            <div><p style="font-weight:600; font-size:0.85rem;" id="userName">Usuário</p><p style="color:var(--text-muted); font-size:0.75rem;">Sair</p></div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <!-- Header -->
+        <div class="header-bar">
+          <div style="display:flex; gap:12px; align-items:center;">
+            <span style="color:var(--text-secondary); font-size:0.9rem;">🔍</span>
+            <input type="text" placeholder="Buscar veículo..." id="globalSearch" style="background:transparent; border:none; outline:none; color:#fff; font-size:0.9rem; width:200px;" />
+          </div>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <button id="notifBtn" class="btn-secondary" style="padding:8px 12px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </button>
+            <button id="addVehicleBtn" class="btn-primary">+ Novo Veículo</button>
+          </div>
+        </div>
+
+        <!-- ===== VIEW DASHBOARD ===== -->
+        <div id="view-dashboard" class="app-subview">
+          <h1 style="font-size:1.8rem; font-weight:700; letter-spacing:-0.02em;">Garagem Principal</h1>
+          <p style="color:var(--text-secondary); margin-bottom:28px;">Visão geral da sua frota.</p>
+          <div id="dashboardContent"></div>
+        </div>
+
+        <!-- ===== VIEW MEUS VEÍCULOS ===== -->
+        <div id="view-vehicles" class="app-subview" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;">
+            <div><h1 style="font-size:1.8rem; font-weight:700;">Meus Veículos</h1><p style="color:var(--text-secondary);">Gerencie sua frota.</p></div>
+            <button id="addVehicleBtn2" class="btn-primary">+ Adicionar Veículo</button>
+          </div>
+          <div class="vehicle-grid" id="vehicleGrid"></div>
+        </div>
+
+        <!-- ===== VIEW DETALHE DO VEÍCULO ===== -->
+        <div id="view-vehicle-detail" class="app-subview" style="display:none;">
+          <div id="vehicleDetailContainer"></div>
+        </div>
+
+        <!-- ===== VIEW TIMELINE GERAL ===== -->
+        <div id="view-timeline" class="app-subview" style="display:none;">
+          <h1 style="font-size:1.8rem; font-weight:700;">Linha do Tempo Geral</h1>
+          <p style="color:var(--text-secondary); margin-bottom:28px;">Histórico unificado de todas as manutenções.</p>
+          <div class="glow-card" style="padding:32px;">
+            <div id="globalTimeline" class="timeline"></div>
+          </div>
+        </div>
+
+        <!-- ===== VIEW DOCUMENTOS ===== -->
+        <div id="view-documents" class="app-subview" style="display:none;">
+          <h1 style="font-size:1.8rem; font-weight:700;">Cofre de Documentos</h1>
+          <p style="color:var(--text-secondary); margin-bottom:28px;">Documentos originais com backup.</p>
+          <div class="doc-grid" id="docGrid">
+            <div class="glow-card doc-card" data-doc="crlv">
+              <div class="doc-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
+              <div><h4 style="font-size:0.95rem; font-weight:600;">CRLV Digital 2026</h4><p style="color:var(--text-muted); font-size:0.8rem;">Porsche 911 GT3 RS</p></div>
+            </div>
+            <div class="glow-card doc-card" data-doc="nf">
+              <div class="doc-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
+              <div><h4 style="font-size:0.95rem; font-weight:600;">NF Escapamento Akrapovič</h4><p style="color:var(--text-muted); font-size:0.8rem;">BMW M3 Competition</p></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ===== VIEW PÚBLICA (dinâmica) ===== -->
+  <!-- ============================================================== -->
+  <div id="view-public" class="view-section">
+    <div style="max-width:1000px; margin:0 auto; padding:40px 20px 80px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
+        <div class="logo" id="publicLogo"><div class="logo-dot"></div> CARPASS <span style="font-size:0.75rem; color:var(--text-muted); font-weight:400; margin-left:8px;">| PRONTUÁRIO PÚBLICO</span></div>
+        <button id="backToAppBtn" class="btn-secondary">Voltar ao App</button>
+      </div>
+      <div id="publicContent">
+        <div class="glass-panel" style="padding:40px; text-align:center;">
+          <p style="color:var(--text-muted);">Nenhum veículo selecionado.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ===== JAVASCRIPT ===== -->
+  <!-- ============================================================== -->
+  <script>
+    // ========== CONFIGURAÇÃO SUPABASE ==========
+    const SUPABASE_URL = 'https://mdyzyfimlkmxyishmaao.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_XeZ2g0WeeP09BVbm6C4n7w_McAyCiCF';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ========== ESTADO GLOBAL ==========
+    let currentUser = null;
+    let vehicles = [];
+    let currentView = 'view-auth';
+
+    // ========== DOM REFS ==========
+    const $ = id => document.getElementById(id);
+    const authView = $('view-auth');
+    const appContainer = $('app-container');
+    const authForm = $('authForm');
+    const authEmail = $('authEmail');
+    const authPassword = $('authPassword');
+    const authButton = $('authButton');
+    const authTitle = $('authTitle');
+    const authSub = $('authSub');
+    const toggleAuthBtn = $('toggleAuthBtn');
+    const toast = $('toast');
+    const toastMsg = $('toast-message');
+
+    // ========== AUTENTICAÇÃO ==========
+    let isLoginMode = true;
+
+    function toggleAuthMode() {
+      isLoginMode = !isLoginMode;
+      if (isLoginMode) {
+        authTitle.textContent = 'Bem-vindo';
+        authSub.textContent = 'Faça login ou crie sua conta';
+        authButton.textContent = 'Entrar';
+        toggleAuthBtn.textContent = 'Criar conta';
+      } else {
+        authTitle.textContent = 'Crie sua conta';
+        authSub.textContent = 'Comece a gerenciar seus veículos';
+        authButton.textContent = 'Cadastrar';
+        toggleAuthBtn.textContent = 'Já tenho conta';
+      }
+    }
+
+    async function handleAuth(e) {
+      e.preventDefault();
+      const email = authEmail.value;
+      const password = authPassword.value;
+      authButton.disabled = true;
+      authButton.textContent = 'Carregando...';
+
+      try {
+        let result;
+        if (isLoginMode) {
+          result = await supabase.auth.signInWithPassword({ email, password });
+        } else {
+          result = await supabase.auth.signUp({ email, password });
+        }
+        if (result.error) throw new Error(result.error.message);
+        triggerToast(isLoginMode ? 'Login realizado!' : 'Conta criada! Faça login.');
+        if (!isLoginMode) {
+          toggleAuthMode();
+          authButton.disabled = false;
+          authButton.textContent = 'Entrar';
+          return;
+        }
+        currentUser = result.data.user;
+        await loadUserData();
+        showApp();
+      } catch (err) {
+        triggerToast('Erro: ' + err.message);
+      }
+      authButton.disabled = false;
+      authButton.textContent = isLoginMode ? 'Entrar' : 'Cadastrar';
+    }
+
+    // ========== CARREGAR DADOS DO USUÁRIO ==========
+    async function loadUserData() {
+      if (!currentUser) return;
+      const { data, error } = await supabase
+        .from('vehicles')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao carregar veículos:', error);
+        triggerToast('Erro ao carregar dados.');
+        return;
+      }
+      vehicles = data || [];
+      for (let v of vehicles) {
+        const { data: maintData } = await supabase
+          .from('maintenances')
+          .select('*')
+          .eq('vehicle_id', v.id)
+          .order('created_at', { ascending: false });
+        v.maintenance = maintData || [];
+      }
+    }
+
+    // ========== MOSTRAR APP ==========
+    function showApp() {
+      authView.classList.remove('active');
+      appContainer.style.display = 'block';
+      const avatar = $('userAvatar');
+      const nameEl = $('userName');
+      if (currentUser) {
+        avatar.textContent = currentUser.email.charAt(0).toUpperCase();
+        nameEl.textContent = currentUser.email.split('@')[0];
+      }
+      if (vehicles.length === 0) renderEmptyDashboard();
+      else renderDashboard();
+      renderVehicles();
+      switchView('view-dashboard');
+    }
+
+    // ========== RENDER EMPTY DASHBOARD ==========
+    function renderEmptyDashboard() {
+      const container = $('dashboardContent');
+      container.innerHTML = `
+        <div class="glow-card" style="padding:60px 20px; text-align:center;">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" stroke="currentColor">
+              <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 1 12.4V16c0 .6.4 1 1 1h2"/>
+              <circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>
+            </svg>
+            <h2>Bem-vindo ao CarPass!</h2>
+            <p>Parece que você ainda não cadastrou nenhum veículo. Comece agora mesmo e tenha todo o histórico do seu carro na palma da mão.</p>
+            <button id="emptyAddBtn" class="btn-primary">Adicionar meu primeiro veículo</button>
+          </div>
+        </div>
+      `;
+      $('emptyAddBtn').addEventListener('click', () => openVehicleForm());
+    }
+
+    // ========== RENDER DASHBOARD ==========
+    function renderDashboard() {
+      const container = $('dashboardContent');
+      if (vehicles.length === 0) { renderEmptyDashboard(); return; }
+      const total = vehicles.length;
+      const totalMaintenance = vehicles.reduce((acc, v) => acc + (v.maintenance ? v.maintenance.length : 0), 0);
+      const totalValue = vehicles.reduce((acc, v) => {
+        return acc + (v.maintenance || []).reduce((s, m) => {
+          const num = parseFloat(m.value?.replace(/[^0-9,.]/g, '').replace(',', '.'));
+          return s + (isNaN(num) ? 0 : num);
+        }, 0);
+      }, 0);
+
+      const allMaint = [];
+      vehicles.forEach(v => {
+        (v.maintenance || []).forEach(m => {
+          allMaint.push({ ...m, vehicleName: v.name });
+        });
+      });
+      allMaint.sort((a, b) => new Date(b.date) - new Date(a.date));
+      const recent = allMaint.slice(0, 3);
+
+      container.innerHTML = `
+        <div class="stats-grid">
+          <div class="glow-card stat-card"><span class="label">Veículos</span><div class="value">${total}</div><div class="subtext">Todos ativos</div></div>
+          <div class="glow-card stat-card"><span class="label">Manutenções</span><div class="value">${totalMaintenance}</div><div class="subtext">Registros salvos</div></div>
+          <div class="glow-card stat-card"><span class="label">Investimento Total</span><div class="value">R$ ${totalValue.toFixed(2).replace('.', ',')}</div><div class="subtext">Valorização garantida</div></div>
+          <div class="glow-card stat-card"><span class="label">Próxima Revisão</span><div class="value" style="font-size:1.4rem;">${recent.length > 0 ? 'Em breve' : '—'}</div><div class="subtext" style="color:var(--text-secondary);">${recent.length > 0 ? 'Consulte seus veículos' : 'Sem manutenções'}</div></div>
+        </div>
+        <div style="display:grid; grid-template-columns:2fr 1fr; gap:24px; margin-bottom:32px;">
+          <div class="glow-card" style="padding:24px;">
+            <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:16px;">Histórico de Investimento</h3>
+            <div style="height:120px; background:linear-gradient(90deg, var(--accent-electric) 0%, var(--accent-cyan) 100%); border-radius:8px; opacity:0.3;"></div>
+          </div>
+          <div class="glow-card" style="padding:24px;">
+            <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:20px;">Últimas Atualizações</h3>
+            ${recent.length === 0 ? '<p style="color:var(--text-muted);">Nenhuma atividade recente.</p>' :
+              recent.map(m => `
+                <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+                  <div style="width:10px; height:10px; border-radius:50%; background:var(--accent-emerald);"></div>
+                  <div><p style="font-weight:600; font-size:0.85rem;">${m.desc}</p><p style="color:var(--text-muted); font-size:0.75rem;">${m.vehicleName} • ${m.date}</p></div>
+                </div>
+              `).join('')
+            }
+          </div>
+        </div>
+      `;
+    }
+
+    // ========== RENDER VEHICLES ==========
+    function renderVehicles(filter = '') {
+      const grid = $('vehicleGrid');
+      const filtered = vehicles.filter(v => v.name.toLowerCase().includes(filter.toLowerCase()));
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="glow-card" style="padding:40px; text-align:center; grid-column:1/-1;">
+            <p style="color:var(--text-muted);">Nenhum veículo encontrado.</p>
+            <button class="btn-primary" style="margin-top:16px;" onclick="openVehicleForm()">Adicionar Veículo</button>
+          </div>
+        `;
+        return;
+      }
+      grid.innerHTML = filtered.map(v => {
+        const lastMaintenance = (v.maintenance && v.maintenance.length > 0) ? v.maintenance[0].date : 'Nenhuma';
+        return `
+          <div class="glow-card vehicle-card">
+            <div class="vehicle-img-wrapper" style="background-image:url('${v.image || 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=800&q=80'}');"></div>
+            <div class="vehicle-card-content">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                  <h3 style="font-size:1.3rem; font-weight:700;">${v.name}</h3>
+                  <span class="badge badge-green">${v.maintenance ? v.maintenance.length : 0} registros</span>
+                </div>
+                <p style="color:var(--text-secondary); font-size:0.85rem; margin:4px 0 8px;">${v.brand} • ${v.year || ''} • ${v.km || ''}</p>
+              </div>
+              <div style="border-top:1px solid var(--border-subtle); padding-top:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-size:0.8rem; color:var(--text-muted);">Última: ${lastMaintenance}</span>
+                  <div style="display:flex; gap:6px;">
+                    <button class="btn-secondary" style="padding:6px 12px; font-size:0.75rem;" data-action="view" data-id="${v.id}">Visualizar</button>
+                    <button class="btn-secondary" style="padding:6px 12px; font-size:0.75rem;" data-action="edit" data-id="${v.id}">✎</button>
+                    <button class="btn-danger" style="padding:6px 12px; font-size:0.75rem;" data-action="delete" data-id="${v.id}">✕</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Event delegation para os botões
+      grid.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const action = btn.dataset.action;
+          const id = btn.dataset.id;
+          if (action === 'view') viewVehicleDetail(id);
+          else if (action === 'edit') editVehicle(id);
+          else if (action === 'delete') deleteVehicle(id);
+        });
+      });
+    }
+
+    function filterVehicles(value) {
+      renderVehicles(value);
+    }
+
+    // ========== CRUD VEHICLES ==========
+    function openVehicleForm(id = null) {
+      $('editVehicleId').value = id || '';
+      const title = $('vehicleFormTitle');
+      if (id) {
+        const v = vehicles.find(v => v.id == id);
+        if (!v) return;
+        title.textContent = 'Editar Veículo';
+        $('vName').value = v.name || '';
+        $('vBrand').value = v.brand || '';
+        $('vYear').value = v.year || '';
+        $('vKm').value = v.km || '';
+        $('vPower').value = v.power || '';
+        $('vEngine').value = v.engine || '';
+        $('vTransmission').value = v.transmission || '';
+        $('vImage').value = v.image || '';
+      } else {
+        title.textContent = 'Novo Veículo';
+        $('vehicleForm').reset();
+      }
+      openModal('vehicleFormModal');
+    }
+
+    function editVehicle(id) { openVehicleForm(id); }
+
+    async function saveVehicle(e) {
+      e.preventDefault();
+      const id = $('editVehicleId').value;
+      const data = {
+        name: $('vName').value.trim(),
+        brand: $('vBrand').value.trim(),
+        year: $('vYear').value.trim(),
+        km: $('vKm').value.trim(),
+        power: $('vPower').value.trim(),
+        engine: $('vEngine').value.trim(),
+        transmission: $('vTransmission').value.trim(),
+        image: $('vImage').value.trim(),
+        user_id: currentUser.id,
+      };
+
+      try {
+        if (id) {
+          const { error } = await supabase
+            .from('vehicles')
+            .update(data)
+            .eq('id', id)
+            .eq('user_id', currentUser.id);
+          if (error) throw error;
+          triggerToast('Veículo atualizado!');
+        } else {
+          const { error } = await supabase
+            .from('vehicles')
+            .insert([data]);
+          if (error) throw error;
+          triggerToast('Veículo adicionado!');
+        }
+        closeModal('vehicleFormModal');
+        await loadUserData();
+        renderDashboard();
+        renderVehicles();
+      } catch (err) {
+        triggerToast('Erro: ' + err.message);
+      }
+    }
+
+    async function deleteVehicle(id) {
+      if (!confirm('Tem certeza?')) return;
+      try {
+        const { error } = await supabase
+          .from('vehicles')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', currentUser.id);
+        if (error) throw error;
+        triggerToast('Veículo removido.');
+        await loadUserData();
+        renderDashboard();
+        renderVehicles();
+      } catch (err) {
+        triggerToast('Erro: ' + err.message);
+      }
+    }
+
+    // ========== VIEW VEHICLE DETAIL ==========
+    async function viewVehicleDetail(id) {
+      const v = vehicles.find(v => v.id == id);
+      if (!v) return;
+      const container = $('vehicleDetailContainer');
+      const maint = (v.maintenance || []).map(m => `
+        <div class="timeline-node">
+          <div class="timeline-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div>
+                <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} • ${m.place || ''}</span>
+                <h4 style="font-size:1.1rem; font-weight:600; margin-top:4px;">${m.desc}</h4>
+              </div>
+              ${m.value ? `<span class="badge badge-blue">${m.value}</span>` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('') || '<p style="color:var(--text-muted);">Nenhuma manutenção registrada.</p>';
+
+      const score = Math.min(95, 60 + (v.maintenance ? v.maintenance.length * 3 : 0));
+
+      container.innerHTML = `
+        <div class="glow-card" style="margin-bottom:32px; padding:0; overflow:hidden;">
+          <div style="height:380px; width:100%; background-size:cover; background-position:center; background-image:url('${v.image || 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1600&q=80'}'); position:relative;">
+            <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(5,5,5,0.2) 0%, var(--bg-card) 100%);"></div>
+            <div style="position:absolute; bottom:32px; left:32px; right:32px; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;">
+              <div>
+                <div class="badge badge-blue" style="margin-bottom:12px;">PASSAPORTE VERIFICADO</div>
+                <h1 style="font-size:2.8rem; font-weight:800; letter-spacing:-0.03em;">${v.name}</h1>
+                <p style="color:var(--text-secondary); font-size:1rem;">${v.brand} • ${v.year || ''} • ${v.km || ''}</p>
+              </div>
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <button class="btn-secondary" id="shareBtn">Compartilhar</button>
+                <button class="btn-primary" id="qrBtn" data-id="${v.id}">QR Code / NFC</button>
+              </div>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(6, 1fr); gap:1px; background:var(--border-subtle); padding-top:1px;">
+            <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">MARCA</p><p style="font-weight:700; font-size:1.1rem;">${v.brand}</p></div>
+            <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">ANO</p><p style="font-weight:700; font-size:1.1rem;">${v.year || '-'}</p></div>
+            <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">MOTOR</p><p style="font-weight:700; font-size:1.1rem;">${v.engine || '-'}</p></div>
+            <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">POTÊNCIA</p><p style="font-weight:700; font-size:1.1rem;">${v.power || '-'}</p></div>
+            <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">KM</p><p style="font-weight:700; font-size:1.1rem;">${v.km || '-'}</p></div>
+            <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">STATUS</p><p style="font-weight:700; font-size:1.1rem; color:var(--accent-emerald);">${score > 80 ? 'Impecável' : 'Bom'}</p></div>
+          </div>
+        </div>
+
+        <div class="glow-card" style="padding:32px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
+            <h3 style="font-size:1.3rem; font-weight:700;">Linha do Tempo de Manutenções</h3>
+            <button class="btn-primary" id="addMaintBtn" data-id="${v.id}">+ Adicionar Manutenção</button>
+          </div>
+          <div class="timeline">${maint}</div>
+        </div>
+      `;
+
+      // Eventos do detalhe
+      $('shareBtn').addEventListener('click', () => triggerToast('Link copiado!'));
+      $('qrBtn').addEventListener('click', () => generateQR(v.id));
+      $('addMaintBtn').addEventListener('click', () => openMaintenanceForm(v.id));
+
+      // Mudar para view de detalhe
+      document.querySelectorAll('.app-subview').forEach(el => el.style.display = 'none');
+      $('view-vehicle-detail').style.display = 'block';
+      document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+      document.querySelector('[data-view="view-vehicles"]').classList.add('active');
+    }
+
+    // ========== MAINTENANCE CRUD ==========
+    function openMaintenanceForm(vehicleId) {
+      $('maintenanceVehicleId').value = vehicleId;
+      $('maintenanceForm').reset();
+      openModal('maintenanceFormModal');
+    }
+
+    async function addMaintenance(e) {
+      e.preventDefault();
+      const vehicleId = $('maintenanceVehicleId').value;
+      const data = {
+        vehicle_id: parseInt(vehicleId),
+        date: $('mDate').value.trim(),
+        description: $('mDesc').value.trim(),
+        value: $('mValue').value.trim(),
+        place: $('mPlace').value.trim(),
+      };
+      if (!data.date || !data.description) {
+        triggerToast('Preencha data e descrição.');
+        return;
+      }
+      try {
+        const { error } = await supabase
+          .from('maintenances')
+          .insert([data]);
+        if (error) throw error;
+        triggerToast('Manutenção adicionada!');
+        closeModal('maintenanceFormModal');
+        await loadUserData();
+        // Recarregar detalhe se estiver visível
+        if ($('view-vehicle-detail').style.display !== 'none') {
+          viewVehicleDetail(vehicleId);
+        }
+        renderDashboard();
+        renderVehicles();
+      } catch (err) {
+        triggerToast('Erro: ' + err.message);
+      }
+    }
+
+    // ========== GLOBAL TIMELINE ==========
+    function renderGlobalTimeline() {
+      const container = $('globalTimeline');
+      const all = [];
+      vehicles.forEach(v => {
+        (v.maintenance || []).forEach(m => {
+          all.push({ ...m, vehicleName: v.name });
+        });
+      });
+      all.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      if (all.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted);">Nenhuma manutenção registrada.</p>';
+        return;
+      }
+
+      container.innerHTML = all.map(m => `
+        <div class="timeline-node">
+          <div class="timeline-card">
+            <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} • ${m.vehicleName}</span>
+            <h4 style="font-size:1.1rem; font-weight:600; margin-top:4px;">${m.desc}</h4>
+            ${m.place ? `<p style="color:var(--text-secondary); font-size:0.85rem;">${m.place}</p>` : ''}
+            ${m.value ? `<span class="badge badge-blue">${m.value}</span>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ========== PUBLIC VIEW ==========
+    async function renderPublic(vehicleId) {
+      const container = $('publicContent');
+      if (!vehicleId) {
+        container.innerHTML = '<div class="glass-panel" style="padding:40px; text-align:center;"><p style="color:var(--text-muted);">Veículo não encontrado.</p></div>';
+        return;
+      }
+      const { data: v, error } = await supabase
+        .from('vehicles')
+        .select('*, maintenances(*)')
+        .eq('id', vehicleId)
+        .single();
+
+      if (error || !v) {
+        container.innerHTML = '<div class="glass-panel" style="padding:40px; text-align:center;"><p style="color:var(--text-muted);">Veículo não encontrado.</p></div>';
+        return;
+      }
+
+      const maint = (v.maintenances || []).map(m => `
+        <div class="timeline-node">
+          <div class="timeline-card">
+            <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} ${m.place ? '• '+m.place : ''}</span>
+            <h4 style="font-size:1rem; font-weight:600; margin-top:4px;">${m.description}</h4>
+            ${m.value ? `<span class="badge badge-blue">${m.value}</span>` : ''}
+          </div>
+        </div>
+      `).join('') || '<p style="color:var(--text-muted);">Nenhuma manutenção registrada.</p>';
+
+      const score = Math.min(95, 60 + (v.maintenances ? v.maintenances.length * 3 : 0));
+
+      container.innerHTML = `
+        <div class="glass-panel" style="padding:40px; margin-bottom:32px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:24px;">
+          <div>
+            <div class="badge badge-green" style="margin-bottom:12px;">100% REGISTROS COMPROVADOS</div>
+            <h1 style="font-size:2.5rem; font-weight:800; letter-spacing:-0.03em;">${v.name}</h1>
+            <p style="color:var(--text-secondary); margin-top:6px;">${v.brand} • ${v.year || ''} • ${v.km || ''}</p>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <div class="trust-circle-container">
+              <svg class="trust-circle-svg" viewBox="0 0 140 140">
+                <circle class="trust-circle-bg" cx="70" cy="70" r="60" />
+                <circle class="trust-circle-progress" cx="70" cy="70" r="60" style="stroke-dashoffset: ${377 - (score/100)*377};" />
+              </svg>
+              <div class="trust-score-text">${score}<span>/ 100</span></div>
+            </div>
+            <span style="font-size:0.8rem; color:var(--text-secondary); font-weight:600;">Índice de Confiabilidade</span>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px;">
+          <div class="glow-card" style="padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">MARCA</p><p style="font-size:1.5rem; font-weight:700;">${v.brand}</p></div>
+          <div class="glow-card" style="padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">ANO</p><p style="font-size:1.5rem; font-weight:700;">${v.year || '-'}</p></div>
+          <div class="glow-card" style="padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">POTÊNCIA</p><p style="font-size:1.5rem; font-weight:700;">${v.power || '-'}</p></div>
+          <div class="glow-card" style="padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">CÂMBIO</p><p style="font-size:1.5rem; font-weight:700;">${v.transmission || '-'}</p></div>
+        </div>
+
+        <div class="glow-card" style="padding:32px;">
+          <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:24px;">Histórico de Manutenção Auditado</h3>
+          <div class="timeline">${maint}</div>
+        </div>
+      `;
+    }
+
+    // ========== QR CODE ==========
+    function generateQR(vehicleId) {
+      const url = window.location.href.split('?')[0] + '?id=' + vehicleId;
+      const canvas = $('qrCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, 200, 200);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, 200, 200);
+      ctx.fillStyle = '#000000';
+      const size = 10;
+      for (let i=0; i<20; i++) {
+        for (let j=0; j<20; j++) {
+          if ((i+j) % 3 === 0 || (i*j) % 5 === 0) {
+            ctx.fillRect(i*size+5, j*size+5, size, size);
+          }
+        }
+      }
+      canvas.dataset.url = url;
+      openModal('qrModal');
+      triggerToast('QR Code gerado!');
+    }
+
+    function copyPublicLink() {
+      const canvas = $('qrCanvas');
+      const url = canvas.dataset.url || window.location.href;
+      navigator.clipboard?.writeText(url).then(() => {
+        triggerToast('Link copiado: ' + url);
+      }).catch(() => {
+        prompt('Copie o link:', url);
+      });
+    }
+
+    // ========== VIEW SWITCHER ==========
+    function switchView(viewId) {
+      currentView = viewId;
+      document.querySelectorAll('.app-subview').forEach(el => el.style.display = 'none');
+      const map = {
+        'view-dashboard': 'view-dashboard',
+        'view-vehicles': 'view-vehicles',
+        'view-vehicle-detail': 'view-vehicle-detail',
+        'view-timeline': 'view-timeline',
+        'view-documents': 'view-documents',
+      };
+      const target = map[viewId];
+      if (target) {
+        $(target).style.display = 'block';
+        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+        const navMap = {
+          'view-dashboard': 'view-dashboard',
+          'view-vehicles': 'view-vehicles',
+          'view-vehicle-detail': 'view-vehicles',
+          'view-timeline': 'view-timeline',
+          'view-documents': 'view-documents',
+        };
+        const navId = navMap[viewId];
+        if (navId) document.querySelector(`[data-view="${navId}"]`).classList.add('active');
+
+        if (viewId === 'view-dashboard') renderDashboard();
+        else if (viewId === 'view-vehicles') renderVehicles();
+        else if (viewId === 'view-timeline') renderGlobalTimeline();
+      }
+    }
+
+    // ========== LOGOUT ==========
+    async function logout() {
+      await supabase.auth.signOut();
+      currentUser = null;
+      vehicles = [];
+      appContainer.style.display = 'none';
+      authView.classList.add('active');
+      triggerToast('Desconectado.');
+    }
+
+    // ========== MODAL HELPERS ==========
+    function openModal(id) {
+      $(id).classList.add('active');
+    }
+    function closeModal(id) {
+      $(id).classList.remove('active');
+    }
+
+    // ========== TOAST ==========
+    function triggerToast(msg) {
+      toastMsg.innerText = msg;
+      toast.classList.add('show');
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // ========== MOUSE GLOW ==========
+    document.addEventListener('mousemove', (e) => {
+      document.querySelectorAll('.glow-card').forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', x + 'px');
+        card.style.setProperty('--mouse-y', y + 'px');
+      });
+    });
+
+    // ========== INICIALIZAR EVENTOS ==========
+    document.addEventListener('DOMContentLoaded', () => {
+      // Auth
+      authForm.addEventListener('submit', handleAuth);
+      toggleAuthBtn.addEventListener('click', toggleAuthMode);
+
+      // Vehicle form
+      $('vehicleForm').addEventListener('submit', saveVehicle);
+      $('cancelVehicleBtn').addEventListener('click', () => closeModal('vehicleFormModal'));
+
+      // Maintenance form
+      $('maintenanceForm').addEventListener('submit', addMaintenance);
+      $('cancelMaintenanceBtn').addEventListener('click', () => closeModal('maintenanceFormModal'));
+
+      // Add vehicle buttons
+      $('addVehicleBtn').addEventListener('click', () => openVehicleForm());
+      $('addVehicleBtn2').addEventListener('click', () => openVehicleForm());
+
+      // Logout
+      $('logoutBtn').addEventListener('click', logout);
+
+      // Sidebar navigation
+      document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const view = item.dataset.view;
+          if (view) switchView(view);
+        });
+      });
+
+      // Notifications
+      $('notifBtn').addEventListener('click', () => triggerToast('Sem novas notificações'));
+
+      // Search
+      $('globalSearch').addEventListener('input', (e) => filterVehicles(e.target.value));
+
+      // QR modal actions
+      $('copyLinkBtn').addEventListener('click', copyPublicLink);
+      $('closeQrBtn').addEventListener('click', () => closeModal('qrModal'));
+
+      // Back to app from public
+      $('backToAppBtn').addEventListener('click', () => {
+        if (currentUser) {
+          document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+          appContainer.style.display = 'block';
+          switchView('view-dashboard');
+        } else {
+          switchView('view-auth');
+        }
+      });
+
+      // Document cards
+      document.querySelectorAll('.doc-card').forEach(card => {
+        card.addEventListener('click', () => triggerToast('Baixando documento...'));
+      });
+
+      // Logo click
+      document.querySelectorAll('.logo').forEach(el => {
+        el.addEventListener('click', () => {
+          if (currentUser) switchView('view-dashboard');
+          else switchView('view-auth');
+        });
+      });
+
+      // Fechar modais com clique fora
+      document.querySelectorAll('.modal-overlay').forEach(el => {
+        el.addEventListener('click', function(e) {
+          if (e.target === this) this.classList.remove('active');
+        });
+      });
+    });
+
+    // ========== VERIFICAR SESSÃO ==========
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        currentUser = session.user;
+        loadUserData().then(() => showApp());
+      } else {
+        authView.classList.add('active');
+      }
+    });
+
+    // ========== PÁGINA PÚBLICA via URL ==========
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (id) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        $('view-public').classList.add('active');
+        renderPublic(id);
+      }
+    });
+
+    // ========== EXPOR FUNÇÕES GLOBAIS ==========
+    window.openVehicleForm = openVehicleForm;
+    window.editVehicle = editVehicle;
+    window.deleteVehicle = deleteVehicle;
+    window.viewVehicleDetail = viewVehicleDetail;
+    window.openMaintenanceForm = openMaintenanceForm;
+    window.generateQR = generateQR;
+    window.triggerToast = triggerToast;
+    window.switchView = switchView;
+    window.filterVehicles = filterVehicles;
+    window.toggleAuthMode = toggleAuthMode;
+  </script>
+</body>
+</html>
