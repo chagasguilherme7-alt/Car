@@ -9,7 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* ===== RESET E VARIÁVEIS ===== */
     * {
       margin: 0;
       padding: 0;
@@ -138,31 +137,12 @@
     }
     .badge-blue { background: rgba(0,102,255,0.15); color: var(--accent-cyan); border: 1px solid rgba(0,102,255,0.3); }
     .badge-green { background: rgba(16,185,129,0.15); color: var(--accent-emerald); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-gray { background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-subtle); }
 
-    /* ===== VIEWS ===== */
     .view-section { display: none; animation: fadeIn 0.4s ease forwards; }
     .view-section.active { display: block; }
     @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
-    /* ===== TOP NAV ===== */
-    .top-nav {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90%;
-      max-width: 1200px;
-      padding: 14px 28px;
-      z-index: 1000;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: 16px;
-    }
     .logo {
       font-weight: 800;
       font-size: 1.25rem;
@@ -181,7 +161,6 @@
       box-shadow: 0 0 10px var(--accent-electric);
     }
 
-    /* ===== SIDEBAR ===== */
     .app-layout {
       display: flex;
       min-height: 100vh;
@@ -248,8 +227,21 @@
       padding-bottom: 20px;
       border-bottom: 1px solid var(--border-subtle);
     }
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-electric), #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.85rem;
+      border: 2px solid var(--border-medium);
+      cursor: pointer;
+    }
 
-    /* ===== CARDS & GRIDS ===== */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -294,7 +286,6 @@
       z-index: 2;
     }
 
-    /* ===== TIMELINE ===== */
     .timeline {
       position: relative;
       padding-left: 32px;
@@ -332,7 +323,29 @@
       border-radius: 12px;
     }
 
-    /* ===== MODAL ===== */
+    .doc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .doc-card {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+    }
+    .doc-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: rgba(0,102,255,0.1);
+      color: var(--accent-electric);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -359,7 +372,8 @@
       from { transform: translateY(30px) scale(0.95); opacity:0; }
       to { transform: translateY(0) scale(1); opacity:1; }
     }
-    .modal-content input, .modal-content textarea {
+
+    .modal-content input, .modal-content textarea, .modal-content select {
       width: 100%;
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
@@ -377,7 +391,6 @@
       margin-top: 12px;
     }
 
-    /* ===== TOAST ===== */
     .toast {
       position: fixed;
       bottom: 30px;
@@ -398,7 +411,6 @@
     }
     .toast.show { transform: translateY(0); opacity: 1; }
 
-    /* ===== TRUST CIRCLE ===== */
     .trust-circle-container {
       position: relative;
       width: 140px;
@@ -432,7 +444,25 @@
     }
     .trust-score-text span { font-size: 0.7rem; color: var(--text-secondary); font-weight: 500; margin-top: -4px; }
 
-    /* ===== QR CODE EXIBIÇÃO ===== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+      gap: 16px;
+    }
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      stroke: var(--text-muted);
+      stroke-width: 1.5;
+      fill: none;
+    }
+    .empty-state h2 { font-size: 1.8rem; font-weight: 700; }
+    .empty-state p { color: var(--text-secondary); max-width: 400px; }
+
     .qr-display {
       background: #fff;
       padding: 20px;
@@ -444,16 +474,26 @@
       margin: 0 auto;
     }
 
-    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
       .sidebar { width: 70px; padding: 16px 8px; }
       .sidebar-item span { display: none; }
       .sidebar-item { justify-content: center; padding: 12px; }
       .main-content { margin-left: 70px; padding: 20px; }
       .header-bar { flex-wrap: wrap; gap: 12px; }
-      .top-nav { width: 95%; padding: 10px 16px; flex-wrap: wrap; gap: 8px; }
-      .top-nav .btn-primary, .top-nav .btn-secondary { padding: 6px 12px; font-size: 0.75rem; }
       .vehicle-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Página pública */
+    .public-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+    .public-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
     }
   </style>
 </head>
@@ -469,7 +509,7 @@
   <div id="qrModal" class="modal-overlay">
     <div class="modal-content text-center">
       <h3 style="font-size:1.4rem; margin-bottom:8px;">QR Code do Veículo</h3>
-      <p style="color:var(--text-secondary); margin-bottom:24px; font-size:0.85rem;">Escaneie para acessar o histórico do veículo.</p>
+      <p style="color:var(--text-secondary); margin-bottom:24px; font-size:0.85rem;">Escaneie para acessar o histórico público.</p>
       <div id="qrCodeContainer" class="qr-display">
         <canvas id="qrCanvas" width="200" height="200"></canvas>
       </div>
@@ -533,41 +573,111 @@
   </div>
 
   <!-- ============================================================== -->
-  <!-- ===== VIEW 1: GERADOR DE QR CODE (página inicial) ===== -->
+  <!-- ===== APP CONTAINER (com Sidebar) ===== -->
   <!-- ============================================================== -->
-  <div id="view-generator" class="view-section active">
-    <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; background:radial-gradient(circle at 50% 50%, rgba(0,102,255,0.1) 0%, transparent 70%);">
-      <div class="glass-panel" style="max-width:500px; width:100%; padding:40px; text-align:center;">
-        <div class="logo" style="justify-content:center; margin-bottom:24px;"><div class="logo-dot"></div> CARPASS</div>
-        <h2 style="font-size:1.6rem; font-weight:700; margin-bottom:8px;">Seu QR Code único</h2>
-        <p style="color:var(--text-secondary); margin-bottom:32px;">Gere o QR Code do seu veículo. Escaneie para acessar o histórico.</p>
-        <button id="generateQRBtn" class="btn-primary" style="width:100%; justify-content:center; font-size:1rem; padding:16px;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-          Gerar QR Code
-        </button>
-        <div id="qrGeneratedContainer" style="margin-top:32px; display:none;">
-          <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:16px;">Seu QR Code está pronto. Escaneie com a câmera do celular.</p>
-          <div id="qrGenerated" class="qr-display" style="margin:0 auto;">
-            <canvas id="qrGeneratedCanvas" width="200" height="200"></canvas>
+  <div id="app-container" style="display:none;">
+    <div class="app-layout">
+      <aside class="sidebar">
+        <div class="logo"><div class="logo-dot"></div> CARPASS</div>
+        <ul class="sidebar-menu">
+          <li class="sidebar-item active" data-view="view-dashboard">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>Dashboard</span>
+          </li>
+          <li class="sidebar-item" data-view="view-vehicles">
+            <svg viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 1 12.4V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+            <span>Meu Veículo</span>
+          </li>
+          <li class="sidebar-item" data-view="view-timeline">
+            <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span>Timeline</span>
+          </li>
+          <li class="sidebar-item" data-view="view-documents">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>Documentos</span>
+          </li>
+        </ul>
+        <div style="margin-top:auto; padding-top:20px; border-top:1px solid var(--border-subtle);">
+          <div id="logoutBtn" style="display:flex; align-items:center; gap:12px; cursor:pointer;">
+            <div class="avatar" id="userAvatar">U</div>
+            <div><p style="font-weight:600; font-size:0.85rem;" id="userName">Usuário</p><p style="color:var(--text-muted); font-size:0.75rem;">Sair</p></div>
           </div>
-          <button id="copyGeneratedLinkBtn" class="btn-secondary" style="margin-top:16px; width:100%; justify-content:center;">Copiar Link</button>
         </div>
-        <p style="color:var(--text-muted); font-size:0.8rem; margin-top:24px;">Ao gerar, um identificador único é criado e salvo no navegador. Escaneie o QR para cadastrar ou acessar o veículo.</p>
-      </div>
+      </aside>
+
+      <main class="main-content">
+        <!-- Header -->
+        <div class="header-bar">
+          <div style="display:flex; gap:12px; align-items:center;">
+            <span style="color:var(--text-secondary); font-size:0.9rem;">🔍</span>
+            <input type="text" placeholder="Buscar..." id="globalSearch" style="background:transparent; border:none; outline:none; color:#fff; font-size:0.9rem; width:200px;" />
+          </div>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <button id="notifBtn" class="btn-secondary" style="padding:8px 12px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </button>
+            <button id="addVehicleBtn" class="btn-primary">+ Cadastrar Veículo</button>
+          </div>
+        </div>
+
+        <!-- ===== VIEW DASHBOARD ===== -->
+        <div id="view-dashboard" class="app-subview">
+          <h1 style="font-size:1.8rem; font-weight:700; letter-spacing:-0.02em;">Garagem Principal</h1>
+          <p style="color:var(--text-secondary); margin-bottom:28px;">Acompanhe os dados do seu veículo.</p>
+          <div id="dashboardContent"></div>
+        </div>
+
+        <!-- ===== VIEW MEU VEÍCULO ===== -->
+        <div id="view-vehicles" class="app-subview" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;">
+            <div><h1 style="font-size:1.8rem; font-weight:700;">Meu Veículo</h1><p style="color:var(--text-secondary);">Gerencie as informações do seu carro.</p></div>
+            <div style="display:flex; gap:8px;">
+              <button id="qrGenBtn" class="btn-primary">📱 Gerar QR Code</button>
+              <button id="editVehicleBtn" class="btn-secondary">✎ Editar</button>
+            </div>
+          </div>
+          <div id="vehicleDetailContainer"></div>
+        </div>
+
+        <!-- ===== VIEW TIMELINE ===== -->
+        <div id="view-timeline" class="app-subview" style="display:none;">
+          <h1 style="font-size:1.8rem; font-weight:700;">Linha do Tempo</h1>
+          <p style="color:var(--text-secondary); margin-bottom:28px;">Histórico de manutenções do seu veículo.</p>
+          <div class="glow-card" style="padding:32px;">
+            <div id="globalTimeline" class="timeline"></div>
+          </div>
+        </div>
+
+        <!-- ===== VIEW DOCUMENTOS ===== -->
+        <div id="view-documents" class="app-subview" style="display:none;">
+          <h1 style="font-size:1.8rem; font-weight:700;">Cofre de Documentos</h1>
+          <p style="color:var(--text-secondary); margin-bottom:28px;">Documentos originais com backup.</p>
+          <div class="doc-grid" id="docGrid">
+            <div class="glow-card doc-card" data-doc="crlv">
+              <div class="doc-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
+              <div><h4 style="font-size:0.95rem; font-weight:600;">CRLV Digital 2026</h4><p style="color:var(--text-muted); font-size:0.8rem;">Seu veículo</p></div>
+            </div>
+            <div class="glow-card doc-card" data-doc="nf">
+              <div class="doc-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
+              <div><h4 style="font-size:0.95rem; font-weight:600;">NF Peças</h4><p style="color:var(--text-muted); font-size:0.8rem;">Últimas aquisições</p></div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   </div>
 
   <!-- ============================================================== -->
-  <!-- ===== VIEW PÚBLICA (ponto de entrada do QR Code) ===== -->
+  <!-- ===== VIEW PÚBLICA ===== -->
   <!-- ============================================================== -->
-  <div id="view-public" class="view-section">
-    <div style="max-width:1000px; margin:0 auto; padding:40px 20px 80px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
+  <div id="view-public" class="view-section active">
+    <div class="public-container">
+      <div class="public-header">
         <div class="logo" id="publicLogo"><div class="logo-dot"></div> CARPASS <span style="font-size:0.75rem; color:var(--text-muted); font-weight:400; margin-left:8px;">| PRONTUÁRIO PÚBLICO</span></div>
-        <button id="backToGeneratorBtn" class="btn-secondary">Voltar</button>
+        <button id="backToAppBtn" class="btn-secondary">Acessar o App</button>
       </div>
       <div id="publicContent">
-        <!-- preenchido dinamicamente -->
+        <!-- Será preenchido dinamicamente -->
       </div>
     </div>
   </div>
@@ -591,124 +701,180 @@
         window._supabaseClient = supabase;
       }
 
-      // ========== UTILITÁRIOS ==========
-      function generateUUID() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-          var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-          return v.toString(16);
-        });
-      }
+      // ========== ESTADO GLOBAL ==========
+      let currentUser = null;
+      let vehicles = [];
+      let targetUserId = null;
 
+      // ========== DOM REFS ==========
+      const $ = id => document.getElementById(id);
+      const publicView = $('view-public');
+      const publicContent = $('publicContent');
+      const backToAppBtn = $('backToAppBtn');
+      const toast = $('toast');
+      const toastMsg = $('toast-message');
+
+      // ========== TOAST ==========
       function triggerToast(msg) {
-        const toast = document.getElementById('toast');
-        document.getElementById('toast-message').innerText = msg;
+        toastMsg.innerText = msg;
         toast.classList.add('show');
         clearTimeout(toast._timer);
         toast._timer = setTimeout(() => toast.classList.remove('show'), 3500);
       }
 
-      function openModal(id) {
-        document.getElementById(id).classList.add('active');
-      }
-      function closeModal(id) {
-        document.getElementById(id).classList.remove('active');
-      }
-
-      const $ = id => document.getElementById(id);
-
-      // ========== ESTADO ==========
-      let currentVehicleId = null;
-
-      // ========== GERADOR DE QR CODE ==========
-      function initGenerator() {
-        // Verifica se já existe um vehicle_id no localStorage
-        let storedId = localStorage.getItem('carpass_vehicle_id');
-        if (storedId) {
-          currentVehicleId = storedId;
-          showGeneratedQR(storedId);
-        }
-
-        $('generateQRBtn').addEventListener('click', function() {
-          let id = localStorage.getItem('carpass_vehicle_id');
-          if (!id) {
-            id = generateUUID();
-            localStorage.setItem('carpass_vehicle_id', id);
+      // ========== SUPABASE HELPERS ==========
+      async function loadVehicle(userId) {
+        try {
+          const { data, error } = await supabase
+            .from('vehicles')
+            .select('*, maintenances(*)')
+            .eq('user_id', userId)
+            .limit(1)
+            .single();
+          if (error) {
+            if (error.code === 'PGRST116') return null; // not found
+            throw error;
           }
-          currentVehicleId = id;
-          showGeneratedQR(id);
-          triggerToast('QR Code gerado!');
-        });
-
-        $('copyGeneratedLinkBtn').addEventListener('click', function() {
-          const url = window.location.href.split('?')[0] + '?vehicle_id=' + currentVehicleId;
-          navigator.clipboard?.writeText(url).then(() => {
-            triggerToast('Link copiado: ' + url);
-          }).catch(() => {
-            prompt('Copie o link:', url);
-          });
-        });
-      }
-
-      function showGeneratedQR(vehicleId) {
-        const container = $('qrGeneratedContainer');
-        container.style.display = 'block';
-        const canvas = $('qrGeneratedCanvas');
-        const ctx = canvas.getContext('2d');
-        // Desenha um QR simples (simulação)
-        ctx.clearRect(0, 0, 200, 200);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, 200, 200);
-        ctx.fillStyle = '#000000';
-        const size = 10;
-        for (let i=0; i<20; i++) {
-          for (let j=0; j<20; j++) {
-            if ((i+j) % 3 === 0 || (i*j) % 5 === 0) {
-              ctx.fillRect(i*size+5, j*size+5, size, size);
-            }
-          }
+          return data;
+        } catch (err) {
+          console.error('Erro ao carregar veículo:', err);
+          return null;
         }
-        // Guarda o ID no dataset
-        canvas.dataset.vehicleId = vehicleId;
-        // Atualiza o link do botão copiar
-        const url = window.location.href.split('?')[0] + '?vehicle_id=' + vehicleId;
-        canvas.dataset.url = url;
       }
 
-      // ========== PÁGINA PÚBLICA ==========
+      // ========== REDIRECIONAR PARA O APP ==========
+      function goToApp() {
+        window.location.href = window.location.origin;
+      }
+
+      // ========== RENDER PÁGINA PÚBLICA ==========
       async function renderPublic() {
         const params = new URLSearchParams(window.location.search);
-        const vehicleId = params.get('vehicle_id');
+        const userId = params.get('user_id');
 
-        if (!vehicleId) {
-          // Redireciona para o gerador
-          window.location.href = window.location.origin;
+        // Se não houver user_id, mostrar mensagem convidando a acessar o app
+        if (!userId) {
+          publicContent.innerHTML = `
+            <div class="glass-panel" style="padding:60px 20px; text-align:center;">
+              <div style="max-width:400px; margin:0 auto;">
+                <svg width="80" height="80" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="margin-bottom:20px;">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"></circle>
+                  <circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"></circle>
+                  <circle cx="8.5" cy="15.5" r="1.5" fill="currentColor"></circle>
+                  <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"></circle>
+                </svg>
+                <h2 style="font-size:1.8rem; font-weight:700; margin-bottom:8px;">QR Code inválido</h2>
+                <p style="color:var(--text-secondary); margin-bottom:24px;">Para acessar o histórico de um veículo, utilize o QR Code gerado dentro do aplicativo.</p>
+                <button onclick="goToApp()" class="btn-primary">Acessar o App</button>
+              </div>
+            </div>
+          `;
+          backToAppBtn.style.display = 'inline-block';
+          backToAppBtn.textContent = 'Acessar o App';
+          backToAppBtn.onclick = goToApp;
           return;
         }
 
-        currentVehicleId = vehicleId;
-        const container = $('publicContent');
+        targetUserId = userId;
 
-        // Buscar veículo no Supabase
-        const { data: vehicle, error } = await supabase
-          .from('vehicles')
-          .select('*, maintenances(*)')
-          .eq('id', vehicleId)
-          .single();
+        // Verificar sessão
+        const session = await supabase.auth.getSession();
+        if (session.data.session) {
+          currentUser = session.data.session.user;
+        } else {
+          currentUser = null;
+        }
 
-        if (error && error.code !== 'PGRST116') {
-          console.error('Erro ao buscar veículo:', error);
-          container.innerHTML = `<div class="glass-panel" style="padding:40px; text-align:center;"><p style="color:var(--text-muted);">Erro ao carregar dados. Tente novamente.</p></div>`;
+        // Buscar veículo
+        const vehicleData = await loadVehicle(userId);
+        const hasVehicle = vehicleData !== null;
+
+        // Se não logado, mostrar login/cadastro
+        if (!currentUser) {
+          publicContent.innerHTML = `
+            <div class="glass-panel" style="max-width:420px; margin:0 auto; padding:40px; text-align:center;">
+              <h2 style="font-size:1.6rem; font-weight:700; margin-bottom:8px;">Acesse seu veículo</h2>
+              <p style="color:var(--text-secondary); margin-bottom:32px;">Faça login ou crie sua conta para visualizar o histórico.</p>
+              <form id="publicAuthForm" style="display:flex; flex-direction:column; gap:16px; text-align:left;">
+                <div>
+                  <label style="font-size:0.8rem; color:var(--text-secondary); display:block; margin-bottom:6px;">E-mail</label>
+                  <input type="email" id="publicAuthEmail" placeholder="seu@email.com" style="width:100%; background:var(--bg-surface); border:1px solid var(--border-subtle); padding:12px 16px; border-radius:8px; color:#fff; outline:none;" required />
+                </div>
+                <div>
+                  <label style="font-size:0.8rem; color:var(--text-secondary); display:block; margin-bottom:6px;">Senha</label>
+                  <input type="password" id="publicAuthPassword" placeholder="••••••••" style="width:100%; background:var(--bg-surface); border:1px solid var(--border-subtle); padding:12px 16px; border-radius:8px; color:#fff; outline:none;" required />
+                </div>
+                <button type="submit" id="publicAuthButton" class="btn-primary" style="justify-content:center; width:100%;">Entrar</button>
+              </form>
+              <div style="margin:20px 0; display:flex; align-items:center; color:var(--text-muted); font-size:0.8rem;">
+                <div style="flex:1; height:1px; background:var(--border-subtle);"></div>
+                <span style="padding:0 12px;">OU</span>
+                <div style="flex:1; height:1px; background:var(--border-subtle);"></div>
+              </div>
+              <button id="publicToggleAuthBtn" class="btn-secondary" style="justify-content:center; width:100%;">Criar conta</button>
+            </div>
+          `;
+
+          let isLoginMode = true;
+          const authForm = $('publicAuthForm');
+          const authEmail = $('publicAuthEmail');
+          const authPassword = $('publicAuthPassword');
+          const authButton = $('publicAuthButton');
+          const toggleBtn = $('publicToggleAuthBtn');
+
+          toggleBtn.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            authButton.textContent = isLoginMode ? 'Entrar' : 'Cadastrar';
+            toggleBtn.textContent = isLoginMode ? 'Criar conta' : 'Já tenho conta';
+          });
+
+          authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = authEmail.value;
+            const password = authPassword.value;
+            authButton.disabled = true;
+            authButton.textContent = 'Carregando...';
+            try {
+              let result;
+              if (isLoginMode) {
+                result = await supabase.auth.signInWithPassword({ email, password });
+              } else {
+                result = await supabase.auth.signUp({ email, password });
+              }
+              if (result.error) throw new Error(result.error.message);
+              triggerToast(isLoginMode ? 'Login realizado!' : 'Conta criada! Faça login.');
+              if (!isLoginMode) {
+                isLoginMode = true;
+                authButton.textContent = 'Entrar';
+                toggleBtn.textContent = 'Criar conta';
+                authButton.disabled = false;
+                return;
+              }
+              currentUser = result.data.user;
+              // Recarregar a página pública com a sessão
+              renderPublic();
+            } catch (err) {
+              triggerToast('Erro: ' + err.message);
+              authButton.disabled = false;
+              authButton.textContent = isLoginMode ? 'Entrar' : 'Cadastrar';
+            }
+          });
+
+          backToAppBtn.style.display = 'inline-block';
+          backToAppBtn.textContent = 'Acessar o App';
+          backToAppBtn.onclick = goToApp;
           return;
         }
 
-        if (!vehicle) {
-          // Veículo não encontrado -> mostrar formulário de cadastro
-          container.innerHTML = `
+        // Usuário logado
+        if (!hasVehicle) {
+          // Mostrar formulário de cadastro do veículo
+          publicContent.innerHTML = `
             <div class="glass-panel" style="max-width:500px; margin:0 auto; padding:40px;">
-              <h2 style="font-size:1.6rem; font-weight:700; text-align:center; margin-bottom:8px;">Cadastre seu veículo</h2>
-              <p style="color:var(--text-secondary); text-align:center; margin-bottom:24px;">Este QR Code é único. Preencha os dados para vinculá-lo ao seu carro.</p>
+              <h2 style="font-size:1.6rem; font-weight:700; text-align:center; margin-bottom:24px;">Cadastre seu veículo</h2>
               <form id="publicVehicleForm">
-                <input type="hidden" id="publicVehicleId" value="${vehicleId}" />
+                <input type="hidden" id="publicEditVehicleId" value="" />
                 <label>Nome do Veículo *</label>
                 <input type="text" id="publicVName" placeholder="Ex: 911 GT3 RS" required />
                 <label>Marca *</label>
@@ -733,9 +899,7 @@
           const form = $('publicVehicleForm');
           form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const id = $('publicVehicleId').value;
             const data = {
-              id: id,
               name: $('publicVName').value.trim(),
               brand: $('publicVBrand').value.trim(),
               year: $('publicVYear').value.trim(),
@@ -744,22 +908,26 @@
               engine: $('publicVEngine').value.trim(),
               transmission: $('publicVTransmission').value.trim(),
               image: $('publicVImage').value.trim(),
+              user_id: currentUser.id,
             };
             try {
               const { error } = await supabase.from('vehicles').insert([data]);
               if (error) throw error;
               triggerToast('Veículo cadastrado com sucesso!');
-              // Recarregar a página pública para mostrar o painel
               renderPublic();
             } catch (err) {
               triggerToast('Erro: ' + err.message);
             }
           });
+
+          backToAppBtn.style.display = 'inline-block';
+          backToAppBtn.textContent = 'Acessar o App';
+          backToAppBtn.onclick = goToApp;
           return;
         }
 
-        // Veículo existe -> mostrar painel
-        const v = vehicle;
+        // Usuário logado e veículo existe – mostrar painel
+        const v = vehicleData;
         const maint = (v.maintenances || []).map(m => `
           <div class="timeline-node">
             <div class="timeline-card">
@@ -776,7 +944,7 @@
 
         const score = Math.min(95, 60 + (v.maintenances ? v.maintenances.length * 3 : 0));
 
-        container.innerHTML = `
+        publicContent.innerHTML = `
           <div class="glow-card" style="margin-bottom:32px; padding:0; overflow:hidden;">
             <div style="height:380px; width:100%; background-size:cover; background-position:center; background-image:url('${v.image || 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1600&q=80'}'); position:relative;">
               <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(5,5,5,0.2) 0%, var(--bg-card) 100%);"></div>
@@ -813,10 +981,10 @@
 
         // Eventos
         $('shareBtn').addEventListener('click', () => triggerToast('Link copiado!'));
-        $('qrBtn').addEventListener('click', () => generateQR(v.id));
+        $('qrBtn').addEventListener('click', () => generateQR(currentUser.id));
         $('addMaintBtn').addEventListener('click', () => openMaintenanceForm(v.id));
 
-        // Função para adicionar manutenção
+        // Adicionar manutenção via modal
         window.openMaintenanceForm = function(vehicleId) {
           $('maintenanceVehicleId').value = vehicleId;
           $('maintenanceForm').reset();
@@ -827,7 +995,7 @@
           e.preventDefault();
           const vehicleId = $('maintenanceVehicleId').value;
           const data = {
-            vehicle_id: vehicleId,
+            vehicle_id: parseInt(vehicleId),
             date: $('mDate').value.trim(),
             description: $('mDesc').value.trim(),
             value: $('mValue').value.trim(),
@@ -842,7 +1010,7 @@
             if (error) throw error;
             triggerToast('Manutenção adicionada!');
             closeModal('maintenanceFormModal');
-            renderPublic(); // recarrega a página pública
+            renderPublic();
           } catch (err) {
             triggerToast('Erro: ' + err.message);
           }
@@ -850,17 +1018,23 @@
 
         $('maintenanceForm').addEventListener('submit', window.addMaintenance);
         $('cancelMaintenanceBtn').addEventListener('click', () => closeModal('maintenanceFormModal'));
+
+        backToAppBtn.style.display = 'inline-block';
+        backToAppBtn.textContent = 'Acessar o App';
+        backToAppBtn.onclick = goToApp;
       }
 
-      // ========== QR CODE (geração) ==========
-      function generateQR(vehicleId) {
-        const url = window.location.href.split('?')[0] + '?vehicle_id=' + vehicleId;
+      // ========== QR CODE ==========
+      function generateQR(userId) {
+        const baseUrl = window.location.origin + window.location.pathname;
+        const url = baseUrl + '?user_id=' + userId;
         const canvas = $('qrCanvas');
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, 200, 200);
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, 200, 200);
         ctx.fillStyle = '#000000';
+        // Gerar QR Code simulado (visual)
         const size = 10;
         for (let i=0; i<20; i++) {
           for (let j=0; j<20; j++) {
@@ -884,6 +1058,14 @@
         });
       }
 
+      // ========== MODAL HELPERS ==========
+      function openModal(id) {
+        $(id).classList.add('active');
+      }
+      function closeModal(id) {
+        $(id).classList.remove('active');
+      }
+
       // ========== INICIALIZAÇÃO ==========
       function init() {
         // Eventos globais
@@ -897,24 +1079,35 @@
           });
         });
 
-        // Botão voltar da página pública
-        $('backToGeneratorBtn').addEventListener('click', function() {
-          window.location.href = window.location.origin;
-        });
-
-        // Verificar se é página pública (parâmetro vehicle_id)
+        // Verificar se há user_id na URL
         const params = new URLSearchParams(window.location.search);
-        if (params.has('vehicle_id')) {
-          // Ativar view pública
-          document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-          $('view-public').classList.add('active');
+        if (params.has('user_id')) {
           renderPublic();
         } else {
-          // Página inicial (gerador)
-          document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-          $('view-generator').classList.add('active');
-          initGenerator();
+          // Sem user_id – mostrar mensagem
+          publicContent.innerHTML = `
+            <div class="glass-panel" style="padding:60px 20px; text-align:center;">
+              <div style="max-width:400px; margin:0 auto;">
+                <svg width="80" height="80" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="margin-bottom:20px;">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"></circle>
+                  <circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"></circle>
+                  <circle cx="8.5" cy="15.5" r="1.5" fill="currentColor"></circle>
+                  <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"></circle>
+                </svg>
+                <h2 style="font-size:1.8rem; font-weight:700; margin-bottom:8px;">QR Code inválido</h2>
+                <p style="color:var(--text-secondary); margin-bottom:24px;">Para acessar o histórico de um veículo, utilize o QR Code gerado dentro do aplicativo.</p>
+                <button onclick="goToApp()" class="btn-primary">Acessar o App</button>
+              </div>
+            </div>
+          `;
+          backToAppBtn.style.display = 'inline-block';
+          backToAppBtn.textContent = 'Acessar o App';
+          backToAppBtn.onclick = goToApp;
         }
+
+        // Botão "Acessar o App" padrão (fallback)
+        backToAppBtn.addEventListener('click', goToApp);
       }
 
       // Start
@@ -923,6 +1116,13 @@
       } else {
         init();
       }
+
+      // ========== EXPOR FUNÇÕES GLOBAIS ==========
+      window.goToApp = goToApp;
+      window.generateQR = generateQR;
+      window.triggerToast = triggerToast;
+      window.openModal = openModal;
+      window.closeModal = closeModal;
 
     })();
   </script>
