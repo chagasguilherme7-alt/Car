@@ -133,6 +133,20 @@
       border-color: rgba(255,255,255,0.3);
       transform: translateY(-2px);
     }
+    .btn-danger {
+      background: rgba(255,50,50,0.15);
+      color: #ff4444;
+      border: 1px solid rgba(255,50,50,0.2);
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .btn-danger:hover {
+      background: rgba(255,50,50,0.3);
+      transform: translateY(-2px);
+    }
     .badge {
       display: inline-flex;
       align-items: center;
@@ -207,7 +221,7 @@
     }
     .timeline-node {
       position: relative;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
     }
     .timeline-node::before {
       content: '';
@@ -222,11 +236,17 @@
       border: 2px solid var(--bg-dark);
     }
     .timeline-card {
-      padding: 20px;
+      padding: 16px 20px;
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
       border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
     }
+    .timeline-card .content { flex: 1; }
+    .timeline-card .actions { display: flex; gap: 8px; }
 
     /* ===== MODAL ===== */
     .modal-overlay {
@@ -250,13 +270,15 @@
       padding: 32px;
       position: relative;
       animation: modalUp 0.3s ease;
+      max-height: 90vh;
+      overflow-y: auto;
     }
     @keyframes modalUp {
       from { transform: translateY(30px) scale(0.95); opacity:0; }
       to { transform: translateY(0) scale(1); opacity:1; }
     }
 
-    .modal-content input, .modal-content select {
+    .modal-content input, .modal-content select, .modal-content textarea {
       width: 100%;
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
@@ -382,10 +404,95 @@
       margin-top: 8px;
     }
 
+    /* ===== PAINEL ===== */
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .panel-header .title h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em; }
+    .panel-header .title p { color: var(--text-secondary); font-size: 0.95rem; }
+    .panel-header .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .tab {
+      padding: 10px 20px;
+      border-radius: 10px 10px 0 0;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-weight: 500;
+      transition: var(--transition);
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+    }
+    .tab:hover { color: var(--text-primary); background: rgba(255,255,255,0.03); }
+    .tab.active { color: var(--accent-cyan); border-bottom-color: var(--accent-electric); background: rgba(0,102,255,0.05); }
+
+    .tab-content { display: none; animation: fadeIn 0.3s ease; }
+    .tab-content.active { display: block; }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .metric-card {
+      background: var(--bg-surface);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+    }
+    .metric-card .label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .metric-card .value { font-size: 1.6rem; font-weight: 700; margin-top: 4px; }
+
+    .doc-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-surface);
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 8px;
+    }
+    .doc-item .icon { font-size: 1.4rem; }
+    .doc-item .info { flex: 1; }
+    .doc-item .info .name { font-weight: 600; }
+    .doc-item .info .desc { font-size: 0.8rem; color: var(--text-muted); }
+    .doc-item .actions { display: flex; gap: 8px; }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .gallery-grid img {
+      width: 100%;
+      aspect-ratio: 1/1;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    .gallery-grid img:hover { transform: scale(1.03); border-color: var(--accent-electric); }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
       .top-nav { width: 95%; padding: 10px 16px; flex-wrap: wrap; gap: 8px; }
       .form-card { padding: 24px; }
+      .panel-header .title h1 { font-size: 1.6rem; }
+      .metric-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -397,23 +504,93 @@
     <span id="toast-message">Sucesso!</span>
   </div>
 
-  <!-- ===== MODAL ADICIONAR MANUTENÇÃO ===== -->
-  <div id="maintenanceFormModal" class="modal-overlay">
+  <!-- ===== MODAIS ===== -->
+  <!-- Editar Veículo -->
+  <div id="editVehicleModal" class="modal-overlay">
     <div class="modal-content">
-      <h3 style="font-size:1.4rem; margin-bottom:16px;">Adicionar Manutenção</h3>
-      <form id="maintenanceForm">
-        <input type="hidden" id="maintenanceVehicleId" value="" />
-        <label>Data</label>
-        <input type="text" id="mDate" placeholder="Ex: 12 Out, 2026" required />
-        <label>Descrição *</label>
-        <input type="text" id="mDesc" placeholder="Troca de óleo" required />
-        <label>Valor (opcional)</label>
-        <input type="text" id="mValue" placeholder="R$ 1.200" />
-        <label>Oficina / Local</label>
-        <input type="text" id="mPlace" placeholder="Concessionária Stuttgart" />
+      <h3 style="font-size:1.4rem; margin-bottom:16px;">Editar Veículo</h3>
+      <form id="editVehicleForm">
+        <input type="hidden" id="editVehicleId" />
+        <label>Nome do Veículo *</label>
+        <input type="text" id="editVName" required />
+        <label>Marca *</label>
+        <input type="text" id="editVBrand" required />
+        <label>Ano</label>
+        <input type="text" id="editVYear" />
+        <label>Quilometragem</label>
+        <input type="text" id="editVKm" />
+        <label>Potência (CV)</label>
+        <input type="text" id="editVPower" />
+        <label>Motor</label>
+        <input type="text" id="editVEngine" />
+        <label>Câmbio</label>
+        <input type="text" id="editVTransmission" />
+        <label>URL da Imagem Principal</label>
+        <input type="text" id="editVImage" placeholder="https://exemplo.com/foto.jpg" />
+        <label>Próxima Revisão (KM)</label>
+        <input type="text" id="editVNextReview" placeholder="Ex: 15.000" />
         <div style="display:flex; gap:12px; margin-top:20px; justify-content:flex-end;">
-          <button type="button" id="cancelMaintenanceBtn" class="btn-secondary">Cancelar</button>
+          <button type="button" class="btn-secondary" onclick="closeModal('editVehicleModal')">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Adicionar Documento -->
+  <div id="addDocModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="font-size:1.4rem; margin-bottom:16px;">Adicionar Documento</h3>
+      <form id="addDocForm">
+        <input type="hidden" id="docVehicleId" />
+        <label>Nome do Documento *</label>
+        <input type="text" id="docName" placeholder="Ex: CRLV 2026" required />
+        <label>Descrição</label>
+        <input type="text" id="docDesc" placeholder="Ex: Documento de licenciamento" />
+        <label>URL do Documento (Google Drive, etc.)</label>
+        <input type="text" id="docUrl" placeholder="https://drive.google.com/..." required />
+        <div style="display:flex; gap:12px; margin-top:20px; justify-content:flex-end;">
+          <button type="button" class="btn-secondary" onclick="closeModal('addDocModal')">Cancelar</button>
           <button type="submit" class="btn-primary">Adicionar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Adicionar Imagem à Galeria -->
+  <div id="addImageModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="font-size:1.4rem; margin-bottom:16px;">Adicionar Imagem à Galeria</h3>
+      <form id="addImageForm">
+        <input type="hidden" id="imageVehicleId" />
+        <label>URL da Imagem *</label>
+        <input type="text" id="imageUrl" placeholder="https://exemplo.com/foto.jpg" required />
+        <div style="display:flex; gap:12px; margin-top:20px; justify-content:flex-end;">
+          <button type="button" class="btn-secondary" onclick="closeModal('addImageModal')">Cancelar</button>
+          <button type="submit" class="btn-primary">Adicionar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Editar Manutenção -->
+  <div id="editMaintModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="font-size:1.4rem; margin-bottom:16px;">Editar Manutenção</h3>
+      <form id="editMaintForm">
+        <input type="hidden" id="editMaintId" />
+        <input type="hidden" id="editMaintVehicleId" />
+        <label>Data</label>
+        <input type="text" id="editMDate" required />
+        <label>Descrição *</label>
+        <input type="text" id="editMDesc" required />
+        <label>Valor</label>
+        <input type="text" id="editMValue" />
+        <label>Oficina / Local</label>
+        <input type="text" id="editMPlace" />
+        <div style="display:flex; gap:12px; margin-top:20px; justify-content:flex-end;">
+          <button type="button" class="btn-secondary" onclick="closeModal('editMaintModal')">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
         </div>
       </form>
     </div>
@@ -433,7 +610,7 @@
         </button>
         <div id="qrGeneratedContainer" style="margin-top:32px; display:none;">
           <div class="qr-display" id="qrDisplayBox"></div>
-          <p style="color:var(--text-secondary); font-size:0.85rem; margin-top:12px;">Escaneie o QR Code com a câmera do celular para acessar ou cadastrar o veículo.</p>
+          <p style="color:var(--text-secondary); font-size:0.85rem; margin-top:12px;">Escaneie o QR Code com a câmera do celular.</p>
           <button id="copyGeneratedLinkBtn" class="btn-secondary" style="margin-top:16px; width:100%; justify-content:center;">Copiar Link</button>
         </div>
       </div>
@@ -441,11 +618,11 @@
   </div>
 
   <!-- ============================================================== -->
-  <!-- ===== VIEW PÚBLICA ===== -->
+  <!-- ===== VIEW PÚBLICA (PAINEL) ===== -->
   <!-- ============================================================== -->
   <div id="view-public" class="view-section">
-    <div style="max-width:1000px; margin:0 auto; padding:40px 20px 80px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
+    <div style="max-width:1100px; margin:0 auto; padding:40px 20px 80px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
         <div class="logo" id="publicLogo"><div class="logo-dot"></div> CARPASS <span style="font-size:0.75rem; color:var(--text-muted); font-weight:400; margin-left:8px;">| PRONTUÁRIO DIGITAL</span></div>
         <button id="backToGeneratorBtn" class="btn-secondary">Voltar ao Gerador</button>
       </div>
@@ -480,6 +657,9 @@
       const backToGeneratorBtn = $('backToGeneratorBtn');
       const toast = $('toast');
       const toastMsg = $('toast-message');
+
+      let currentVehicle = null;
+      let currentUuid = null;
 
       // ========== TOAST ==========
       function triggerToast(msg, isError = false) {
@@ -550,6 +730,36 @@
         }
       }
 
+      async function updateVehicle(id, updates) {
+        const { error } = await supabase.from('vehicles').update(updates).eq('id', id);
+        if (error) throw error;
+        return true;
+      }
+
+      async function deleteVehicle(id) {
+        const { error } = await supabase.from('vehicles').delete().eq('id', id);
+        if (error) throw error;
+        return true;
+      }
+
+      async function addMaintenance(vehicleId, data) {
+        const { error } = await supabase.from('maintenances').insert([{ vehicle_id: vehicleId, ...data }]);
+        if (error) throw error;
+        return true;
+      }
+
+      async function updateMaintenance(id, data) {
+        const { error } = await supabase.from('maintenances').update(data).eq('id', id);
+        if (error) throw error;
+        return true;
+      }
+
+      async function deleteMaintenance(id) {
+        const { error } = await supabase.from('maintenances').delete().eq('id', id);
+        if (error) throw error;
+        return true;
+      }
+
       // ========== API FIPE ==========
       const FIPE_API_BASE = 'https://parallelum.com.br/fipe/api/v1/carros';
 
@@ -571,7 +781,7 @@
         return resp.json();
       }
 
-      // ========== RENDER PÁGINA PÚBLICA ==========
+      // ========== RENDER PAINEL ==========
       async function renderPublic() {
         const params = new URLSearchParams(window.location.search);
         const uuid = params.get('id');
@@ -582,15 +792,14 @@
           return;
         }
 
-        publicContent.innerHTML = '<div style="text-align:center; padding:60px; color:var(--text-secondary);">Verificando registro...</div>';
+        publicContent.innerHTML = '<div style="text-align:center; padding:60px; color:var(--text-secondary);">Carregando...</div>';
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         publicView.classList.add('active');
 
         const vehicleData = await loadVehicleByUuid(uuid);
+        currentUuid = uuid;
 
-        // -------------------------------------------------------------
-        // CASO 1: QR Code NÃO CADASTRADO → FORMULÁRIO DE CADASTRO COM FIPE
-        // -------------------------------------------------------------
+        // CASO 1: NÃO CADASTRADO → FORMULÁRIO FIPE
         if (!vehicleData) {
           let marcas = [];
           try {
@@ -602,20 +811,17 @@
           const formHTML = `
             <div class="form-card">
               <h2>Primeiro Acesso</h2>
-              <p class="subtitle">Este QR Code ainda não está vinculado a um veículo. Selecione os dados do veículo na FIPE e informe seu e-mail.</p>
-
+              <p class="subtitle">Este QR Code ainda não está vinculado a um veículo. Selecione os dados na FIPE.</p>
               <form id="publicVehicleForm">
                 <div class="form-group">
-                  <label>E-mail do Proprietário *</label>
+                  <label>E-mail *</label>
                   <input type="email" id="publicAuthEmail" placeholder="seu@email.com" required />
                 </div>
                 <div class="form-group">
-                  <label>Senha de Acesso *</label>
+                  <label>Senha *</label>
                   <input type="password" id="publicAuthPassword" placeholder="••••••••" required />
                 </div>
-
                 <hr class="divider" />
-
                 <div class="form-group">
                   <label>Marca *</label>
                   <select id="fipeMarca">
@@ -635,22 +841,17 @@
                     <option value="">Selecione o modelo primeiro</option>
                   </select>
                 </div>
-
-                <button type="submit" id="publicSubmitBtn" class="btn-primary btn-submit">
-                  Ativar QR Code e Cadastrar
-                </button>
+                <button type="submit" id="publicSubmitBtn" class="btn-primary btn-submit">Ativar QR Code</button>
               </form>
             </div>
           `;
-
           publicContent.innerHTML = formHTML;
 
-          // -------- LÓGICA DOS SELECTS --------
+          // Lógica dos selects
           const marcaSelect = $('fipeMarca');
           const modeloSelect = $('fipeModelo');
           const anoSelect = $('fipeAno');
 
-          // Carrega modelos ao mudar marca
           marcaSelect.addEventListener('change', async function() {
             const marcaId = this.value;
             if (!marcaId) {
@@ -676,7 +877,6 @@
             }
           });
 
-          // Carrega anos ao mudar modelo
           modeloSelect.addEventListener('change', async function() {
             const marcaId = marcaSelect.value;
             const modeloId = this.value;
@@ -698,7 +898,6 @@
             }
           });
 
-          // -------- SUBMIT DO FORMULÁRIO --------
           const form = $('publicVehicleForm');
           const submitBtn = $('publicSubmitBtn');
 
@@ -709,167 +908,440 @@
 
             const email = $('publicAuthEmail').value.trim();
             const password = $('publicAuthPassword').value.trim();
-
-            // Pegar os valores selecionados
             const marcaNome = marcaSelect.options[marcaSelect.selectedIndex]?.text || '';
             const modeloNome = modeloSelect.options[modeloSelect.selectedIndex]?.text || '';
             const anoNome = anoSelect.options[anoSelect.selectedIndex]?.text || '';
 
             if (!email || !password || !marcaNome || !modeloNome || !anoNome) {
-              triggerToast('Preencha todos os campos obrigatórios.', true);
+              triggerToast('Preencha todos os campos.', true);
               submitBtn.disabled = false;
-              submitBtn.textContent = 'Ativar QR Code e Cadastrar';
+              submitBtn.textContent = 'Ativar QR Code';
               return;
             }
 
             try {
               let userId = null;
-
-              // 1. Tenta fazer login com as credenciais fornecidas
               const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-
               if (signInData && signInData.user) {
-                // Login bem-sucedido → usa o usuário existente
                 userId = signInData.user.id;
               } else {
-                // 2. Login falhou → tenta criar uma nova conta
                 const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
                 if (signUpError) throw new Error(signUpError.message);
                 userId = signUpData.user?.id;
-                if (!userId) throw new Error('Erro ao criar conta. Tente novamente.');
               }
+              if (!userId) throw new Error('Erro na autenticação.');
 
-              if (!userId) throw new Error('Não foi possível autenticar a conta.');
-
-              // 3. Insere veículo com os dados da FIPE
-              const { error: insertError } = await supabase
-                .from('vehicles')
-                .insert([{
-                  uuid: uuid,
-                  user_id: userId,
-                  name: modeloNome,
-                  brand: marcaNome,
-                  year: anoNome,
-                  km: '',
-                  power: '',
-                  engine: '',
-                  transmission: '',
-                  image: ''
-                }]);
-
+              const { error: insertError } = await supabase.from('vehicles').insert([{
+                uuid: uuid,
+                user_id: userId,
+                name: modeloNome,
+                brand: marcaNome,
+                year: anoNome,
+                km: '',
+                power: '',
+                engine: '',
+                transmission: '',
+                image: '',
+                gallery: [],
+                documents: [],
+                next_review: ''
+              }]);
               if (insertError) throw new Error(insertError.message);
 
-              triggerToast('Veículo cadastrado e QR Code ativado com sucesso!');
+              triggerToast('Veículo cadastrado com sucesso!');
               setTimeout(() => window.location.reload(), 1200);
-
             } catch (err) {
               triggerToast('Erro: ' + err.message, true);
               submitBtn.disabled = false;
-              submitBtn.textContent = 'Ativar QR Code e Cadastrar';
+              submitBtn.textContent = 'Ativar QR Code';
             }
           });
 
-          backToGeneratorBtn.style.display = 'inline-block';
-          backToGeneratorBtn.onclick = () => {
-            window.location.href = window.location.origin + window.location.pathname;
-          };
+          backToGeneratorBtn.onclick = () => window.location.href = window.location.origin + window.location.pathname;
           return;
         }
 
-        // -------------------------------------------------------------
-        // CASO 2: QR Code JÁ CADASTRADO → PAINEL DO VEÍCULO
-        // -------------------------------------------------------------
-        const v = vehicleData;
-        const maintList = (v.maintenances || []).map(m => `
+        // CASO 2: JÁ CADASTRADO → PAINEL COMPLETO
+        currentVehicle = vehicleData;
+        renderDashboard(vehicleData);
+      }
+
+      // ========== RENDER DASHBOARD ==========
+      function renderDashboard(v) {
+        // Calcular estatísticas
+        const totalMaint = v.maintenances?.length || 0;
+        const totalSpent = (v.maintenances || []).reduce((sum, m) => {
+          const val = parseFloat(m.value?.replace(/[^0-9,.]/g, '').replace(',', '.'));
+          return sum + (isNaN(val) ? 0 : val);
+        }, 0);
+
+        const score = Math.min(95, 60 + totalMaint * 3);
+
+        // Preparar dados para as abas
+        const maintHTML = (v.maintenances || []).map((m, idx) => `
           <div class="timeline-node">
             <div class="timeline-card">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <div>
-                  <span style="color:var(--text-muted); font-size:0.8rem;">${m.date} ${m.place ? '• ' + m.place : ''}</span>
-                  <h4 style="font-size:1.1rem; font-weight:600; margin-top:4px;">${m.description}</h4>
-                </div>
+              <div class="content">
+                <span style="color:var(--text-muted); font-size:0.8rem;">${m.date || 'Sem data'} ${m.place ? '• ' + m.place : ''}</span>
+                <h4 style="font-size:1rem; font-weight:600; margin-top:2px;">${m.description}</h4>
                 ${m.value ? `<span class="badge badge-blue">${m.value}</span>` : ''}
               </div>
-            </div>
-          </div>
-        `).join('') || '<p style="color:var(--text-muted);">Nenhuma manutenção registrada até o momento.</p>';
-
-        publicContent.innerHTML = `
-          <div class="glow-card" style="margin-bottom:32px; padding:0; overflow:hidden;">
-            <div style="height:380px; width:100%; background-size:cover; background-position:center; background-image:url('${v.image || 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1600&q=80'}'); position:relative;">
-              <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(5,5,5,0.2) 0%, var(--bg-card) 100%);"></div>
-              <div style="position:absolute; bottom:32px; left:32px; right:32px; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px;">
-                <div>
-                  <div class="badge badge-green" style="margin-bottom:12px;">✓ VEÍCULO REGISTRADO E VERIFICADO</div>
-                  <h1 style="font-size:2.8rem; font-weight:800; letter-spacing:-0.03em;">${v.name}</h1>
-                  <p style="color:var(--text-secondary); font-size:1rem;">${v.brand} ${v.year ? '• ' + v.year : ''}</p>
-                </div>
-                <div style="display:flex; gap:12px;">
-                  <button id="addMaintBtn" class="btn-primary">+ Adicionar Manutenção</button>
-                </div>
+              <div class="actions">
+                <button class="btn-secondary" style="padding:4px 10px; font-size:0.75rem;" onclick="editMaintenance('${v.id}', ${idx})">✎</button>
+                <button class="btn-danger" style="padding:4px 10px; font-size:0.75rem;" onclick="deleteMaintenance('${v.id}', ${idx})">✕</button>
               </div>
             </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:1px; background:var(--border-subtle); padding-top:1px;">
-              <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">MARCA</p><p style="font-weight:700; font-size:1.1rem;">${v.brand}</p></div>
-              <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">ANO</p><p style="font-weight:700; font-size:1.1rem;">${v.year || '-'}</p></div>
-              <div style="background:var(--bg-card); padding:20px; text-align:center;"><p style="color:var(--text-muted); font-size:0.75rem;">MODELO</p><p style="font-weight:700; font-size:1.1rem;">${v.name}</p></div>
+          </div>
+        `).join('') || '<p style="color:var(--text-muted);">Nenhuma manutenção registrada.</p>';
+
+        const docsHTML = (v.documents || []).map((doc, idx) => `
+          <div class="doc-item">
+            <div class="icon">📄</div>
+            <div class="info">
+              <div class="name">${doc.name}</div>
+              <div class="desc">${doc.description || ''}</div>
+            </div>
+            <div class="actions">
+              <a href="${doc.url}" target="_blank" class="btn-secondary" style="padding:4px 12px; font-size:0.75rem;">Abrir</a>
+              <button class="btn-danger" style="padding:4px 10px; font-size:0.75rem;" onclick="removeDoc(${idx})">✕</button>
+            </div>
+          </div>
+        `).join('') || '<p style="color:var(--text-muted);">Nenhum documento anexado.</p>';
+
+        const galleryHTML = (v.gallery || []).map((img, idx) => `
+          <img src="${img}" alt="Foto do veículo" onclick="window.open('${img}','_blank')" />
+        `).join('') || '<p style="color:var(--text-muted);">Nenhuma imagem na galeria.</p>';
+
+        const nextReview = v.next_review || 'Não definida';
+
+        publicContent.innerHTML = `
+          <div class="panel-header">
+            <div class="title">
+              <h1>${v.name}</h1>
+              <p>${v.brand} ${v.year ? '• ' + v.year : ''} ${v.km ? '• ' + v.km : ''}</p>
+            </div>
+            <div class="actions">
+              <button class="btn-secondary" onclick="openEditVehicle()">✎ Editar</button>
+              <button class="btn-danger" onclick="deleteVehicleConfirm()">🗑 Excluir</button>
             </div>
           </div>
 
-          <div class="glow-card" style="padding:32px;">
-            <h3 style="font-size:1.3rem; font-weight:700; margin-bottom:24px;">Linha do Tempo de Manutenções</h3>
-            <div class="timeline">${maintList}</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:24px;">
+            <div class="glow-card" style="padding:16px; display:flex; align-items:center; gap:16px;">
+              <div style="width:100px; height:100px; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--bg-surface);">
+                <img src="${v.image || 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=300&q=80'}" style="width:100%; height:100%; object-fit:cover;" />
+              </div>
+              <div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
+                  <span class="badge badge-green">✓ Verificado</span>
+                  <span class="badge badge-blue">Score ${score}/100</span>
+                </div>
+                <p style="font-size:0.9rem; color:var(--text-secondary);">${v.engine || 'Motor não informado'} • ${v.transmission || 'Câmbio não informado'}</p>
+                <p style="font-size:0.9rem; color:var(--text-secondary);">Potência: ${v.power || 'N/A'}</p>
+              </div>
+            </div>
+            <div class="glow-card" style="padding:16px;">
+              <div class="metric-grid" style="grid-template-columns:1fr 1fr; gap:12px; margin:0;">
+                <div class="metric-card"><div class="label">Manutenções</div><div class="value">${totalMaint}</div></div>
+                <div class="metric-card"><div class="label">Gasto Total</div><div class="value">R$ ${totalSpent.toFixed(2).replace('.', ',')}</div></div>
+                <div class="metric-card"><div class="label">Próxima Revisão</div><div class="value" style="font-size:1rem;">${nextReview}</div></div>
+                <div class="metric-card"><div class="label">KM Atual</div><div class="value" style="font-size:1rem;">${v.km || 'N/A'}</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tabs">
+            <div class="tab active" data-tab="tab-resumo">📊 Resumo</div>
+            <div class="tab" data-tab="tab-maint">🔧 Manutenções</div>
+            <div class="tab" data-tab="tab-docs">📄 Documentos</div>
+            <div class="tab" data-tab="tab-gallery">🖼 Galeria</div>
+          </div>
+
+          <div id="tab-resumo" class="tab-content active">
+            <div class="glow-card" style="padding:24px;">
+              <h3 style="font-size:1.1rem; font-weight:600; margin-bottom:16px;">Sobre o Veículo</h3>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div><span style="color:var(--text-muted);">Marca</span><br/><strong>${v.brand}</strong></div>
+                <div><span style="color:var(--text-muted);">Modelo</span><br/><strong>${v.name}</strong></div>
+                <div><span style="color:var(--text-muted);">Ano</span><br/><strong>${v.year || '-'}</strong></div>
+                <div><span style="color:var(--text-muted);">Quilometragem</span><br/><strong>${v.km || '-'}</strong></div>
+                <div><span style="color:var(--text-muted);">Motor</span><br/><strong>${v.engine || '-'}</strong></div>
+                <div><span style="color:var(--text-muted);">Câmbio</span><br/><strong>${v.transmission || '-'}</strong></div>
+                <div><span style="color:var(--text-muted);">Potência</span><br/><strong>${v.power || '-'}</strong></div>
+                <div><span style="color:var(--text-muted);">Próxima Revisão</span><br/><strong>${nextReview}</strong></div>
+              </div>
+              <div style="margin-top:16px; display:flex; gap:8px;">
+                <button class="btn-primary" onclick="openEditVehicle()">✎ Editar Dados</button>
+                <button class="btn-secondary" onclick="triggerToast('Relatório exportado com sucesso!')">📥 Exportar Relatório</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="tab-maint" class="tab-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <h3 style="font-size:1.1rem; font-weight:600;">Histórico de Manutenções</h3>
+              <button class="btn-primary" onclick="openAddMaintenance()">+ Adicionar</button>
+            </div>
+            <div class="glow-card" style="padding:20px;">
+              <div class="timeline">${maintHTML}</div>
+            </div>
+          </div>
+
+          <div id="tab-docs" class="tab-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <h3 style="font-size:1.1rem; font-weight:600;">Documentos</h3>
+              <button class="btn-primary" onclick="openAddDoc()">+ Adicionar</button>
+            </div>
+            <div class="glow-card" style="padding:20px;">
+              ${docsHTML}
+            </div>
+          </div>
+
+          <div id="tab-gallery" class="tab-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <h3 style="font-size:1.1rem; font-weight:600;">Galeria de Imagens</h3>
+              <button class="btn-primary" onclick="openAddImage()">+ Adicionar</button>
+            </div>
+            <div class="glow-card" style="padding:20px;">
+              <div class="gallery-grid">${galleryHTML}</div>
+            </div>
           </div>
         `;
 
-        $('addMaintBtn')?.addEventListener('click', () => {
-          $('maintenanceVehicleId').value = v.id;
-          $('maintenanceForm').reset();
-          $('maintenanceFormModal').classList.add('active');
+        // Eventos das abas
+        document.querySelectorAll('.tab').forEach(tab => {
+          tab.addEventListener('click', function() {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            const target = $(this.dataset.tab);
+            if (target) target.classList.add('active');
+          });
         });
 
-        backToGeneratorBtn.style.display = 'inline-block';
+        // Botão voltar
         backToGeneratorBtn.onclick = () => {
           window.location.href = window.location.origin + window.location.pathname;
         };
-      }
 
-      // ========== HANDLER MANUTENÇÃO ==========
-      $('maintenanceForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const vehicleId = $('maintenanceVehicleId').value;
-        const data = {
-          vehicle_id: parseInt(vehicleId),
-          date: $('mDate').value.trim(),
-          description: $('mDesc').value.trim(),
-          value: $('mValue').value.trim(),
-          place: $('mPlace').value.trim(),
+        // Expor funções para onclick
+        window.openAddMaintenance = () => {
+          $('maintenanceVehicleId').value = v.id;
+          $('maintenanceForm').reset();
+          openModal('maintenanceFormModal');
         };
 
+        window.openEditVehicle = () => {
+          $('editVehicleId').value = v.id;
+          $('editVName').value = v.name || '';
+          $('editVBrand').value = v.brand || '';
+          $('editVYear').value = v.year || '';
+          $('editVKm').value = v.km || '';
+          $('editVPower').value = v.power || '';
+          $('editVEngine').value = v.engine || '';
+          $('editVTransmission').value = v.transmission || '';
+          $('editVImage').value = v.image || '';
+          $('editVNextReview').value = v.next_review || '';
+          openModal('editVehicleModal');
+        };
+
+        window.openAddDoc = () => {
+          $('docVehicleId').value = v.id;
+          $('addDocForm').reset();
+          openModal('addDocModal');
+        };
+
+        window.openAddImage = () => {
+          $('imageVehicleId').value = v.id;
+          $('addImageForm').reset();
+          openModal('addImageModal');
+        };
+
+        window.deleteVehicleConfirm = () => {
+          if (confirm(`Tem certeza que deseja excluir permanentemente o veículo "${v.name}"? Esta ação não pode ser desfeita.`)) {
+            deleteVehicle(v.id).then(() => {
+              triggerToast('Veículo excluído.');
+              window.location.href = window.location.origin + window.location.pathname;
+            }).catch(err => triggerToast('Erro ao excluir: ' + err.message, true));
+          }
+        };
+
+        window.editMaintenance = (vehicleId, idx) => {
+          const maint = v.maintenances[idx];
+          if (!maint) return;
+          $('editMaintId').value = maint.id;
+          $('editMaintVehicleId').value = vehicleId;
+          $('editMDate').value = maint.date || '';
+          $('editMDesc').value = maint.description || '';
+          $('editMValue').value = maint.value || '';
+          $('editMPlace').value = maint.place || '';
+          openModal('editMaintModal');
+        };
+
+        window.deleteMaintenance = async (vehicleId, idx) => {
+          const maint = v.maintenances[idx];
+          if (!maint) return;
+          if (!confirm('Excluir esta manutenção?')) return;
+          try {
+            await deleteMaintenance(maint.id);
+            triggerToast('Manutenção excluída.');
+            renderPublic();
+          } catch (err) {
+            triggerToast('Erro ao excluir: ' + err.message, true);
+          }
+        };
+
+        window.removeDoc = (idx) => {
+          if (!confirm('Remover este documento?')) return;
+          const docs = v.documents || [];
+          docs.splice(idx, 1);
+          updateVehicle(v.id, { documents: docs }).then(() => {
+            triggerToast('Documento removido.');
+            renderPublic();
+          }).catch(err => triggerToast('Erro: ' + err.message, true));
+        };
+      }
+
+      // ========== HANDLERS DE FORMULÁRIOS ==========
+
+      // Editar Veículo
+      $('editVehicleForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const id = $('editVehicleId').value;
+        const data = {
+          name: $('editVName').value.trim(),
+          brand: $('editVBrand').value.trim(),
+          year: $('editVYear').value.trim(),
+          km: $('editVKm').value.trim(),
+          power: $('editVPower').value.trim(),
+          engine: $('editVEngine').value.trim(),
+          transmission: $('editVTransmission').value.trim(),
+          image: $('editVImage').value.trim(),
+          next_review: $('editVNextReview').value.trim()
+        };
         try {
-          const { error } = await supabase.from('maintenances').insert([data]);
-          if (error) throw error;
-          triggerToast('Manutenção adicionada com sucesso!');
-          $('maintenanceFormModal').classList.remove('active');
+          await updateVehicle(id, data);
+          triggerToast('Veículo atualizado!');
+          closeModal('editVehicleModal');
           renderPublic();
         } catch (err) {
           triggerToast('Erro: ' + err.message, true);
         }
       });
 
-      $('cancelMaintenanceBtn').addEventListener('click', () => {
-        $('maintenanceFormModal').classList.remove('active');
+      // Adicionar Documento
+      $('addDocForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const vehicleId = $('docVehicleId').value;
+        const doc = {
+          name: $('docName').value.trim(),
+          description: $('docDesc').value.trim(),
+          url: $('docUrl').value.trim()
+        };
+        if (!doc.name || !doc.url) {
+          triggerToast('Nome e URL são obrigatórios.', true);
+          return;
+        }
+        const v = currentVehicle;
+        const docs = v.documents || [];
+        docs.push(doc);
+        try {
+          await updateVehicle(vehicleId, { documents: docs });
+          triggerToast('Documento adicionado!');
+          closeModal('addDocModal');
+          renderPublic();
+        } catch (err) {
+          triggerToast('Erro: ' + err.message, true);
+        }
       });
+
+      // Adicionar Imagem
+      $('addImageForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const vehicleId = $('imageVehicleId').value;
+        const url = $('imageUrl').value.trim();
+        if (!url) {
+          triggerToast('URL da imagem é obrigatória.', true);
+          return;
+        }
+        const v = currentVehicle;
+        const gallery = v.gallery || [];
+        gallery.push(url);
+        try {
+          await updateVehicle(vehicleId, { gallery });
+          triggerToast('Imagem adicionada!');
+          closeModal('addImageModal');
+          renderPublic();
+        } catch (err) {
+          triggerToast('Erro: ' + err.message, true);
+        }
+      });
+
+      // Editar Manutenção
+      $('editMaintForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const id = $('editMaintId').value;
+        const data = {
+          date: $('editMDate').value.trim(),
+          description: $('editMDesc').value.trim(),
+          value: $('editMValue').value.trim(),
+          place: $('editMPlace').value.trim()
+        };
+        try {
+          await updateMaintenance(id, data);
+          triggerToast('Manutenção atualizada!');
+          closeModal('editMaintModal');
+          renderPublic();
+        } catch (err) {
+          triggerToast('Erro: ' + err.message, true);
+        }
+      });
+
+      // Adicionar Manutenção (modal já existente)
+      $('maintenanceForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const vehicleId = $('maintenanceVehicleId').value;
+        const data = {
+          date: $('mDate').value.trim(),
+          description: $('mDesc').value.trim(),
+          value: $('mValue').value.trim(),
+          place: $('mPlace').value.trim()
+        };
+        try {
+          await addMaintenance(vehicleId, data);
+          triggerToast('Manutenção adicionada!');
+          closeModal('maintenanceFormModal');
+          renderPublic();
+        } catch (err) {
+          triggerToast('Erro: ' + err.message, true);
+        }
+      });
+
+      // ========== MODAL HELPERS ==========
+      function openModal(id) {
+        $(id).classList.add('active');
+      }
+      function closeModal(id) {
+        $(id).classList.remove('active');
+      }
+      window.openModal = openModal;
+      window.closeModal = closeModal;
 
       // ========== INICIALIZAÇÃO ==========
       function init() {
         $('generateQrBtn')?.addEventListener('click', generateAndShowQR);
         $('copyGeneratedLinkBtn')?.addEventListener('click', copyGeneratedLink);
 
+        // Fechar modais ao clicar fora
         document.querySelectorAll('.modal-overlay').forEach(el => {
           el.addEventListener('click', function(e) {
             if (e.target === this) this.classList.remove('active');
           });
+        });
+
+        // Botões de cancelar nos modais
+        document.querySelectorAll('.modal-content .btn-secondary[onclick*="closeModal"]').forEach(btn => {
+          // já está com onclick inline
         });
 
         const params = new URLSearchParams(window.location.search);
@@ -886,6 +1358,13 @@
       } else {
         init();
       }
+
+      // ========== EXPOR FUNÇÕES GLOBAIS ==========
+      window.triggerToast = triggerToast;
+      window.renderPublic = renderPublic;
+      window.openModal = openModal;
+      window.closeModal = closeModal;
+
     })();
   </script>
 </body>
