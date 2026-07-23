@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CarPass | Histórico Digital do Seu Veículo</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23050505'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%230066ff'/%3E%3C/svg%3E" />
+  <meta property="og:type" content="website" />
+  <meta id="ogTitle" property="og:title" content="CarPass | Passaporte Digital do Veículo" />
+  <meta id="ogDescription" property="og:description" content="Histórico completo de manutenções, documentos e fotos do veículo, verificado digitalmente." />
+  <meta id="ogImage" property="og:image" content="" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -597,6 +602,84 @@
     }
     .empty-state .empty-icon { font-size: 2rem; margin-bottom: 12px; }
 
+    /* ===== LOADER: CARRO ANDANDO ===== */
+    .loader-scene {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 90px 20px;
+      gap: 22px;
+    }
+    .loader-car-wrap { width: 120px; }
+    .loader-car {
+      width: 100%;
+      height: auto;
+      animation: carBounce 0.55s ease-in-out infinite;
+      filter: drop-shadow(0 8px 14px rgba(0,102,255,0.35));
+    }
+    .loader-wheel { transform-origin: center; animation: wheelSpin 0.5s linear infinite; }
+    @keyframes carBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    @keyframes wheelSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .loader-road {
+      width: 220px;
+      height: 4px;
+      border-radius: 2px;
+      background-image: repeating-linear-gradient(90deg, var(--border-medium) 0 16px, transparent 16px 30px);
+      background-size: 46px 4px;
+      animation: roadMove 0.5s linear infinite;
+    }
+    @keyframes roadMove {
+      from { background-position: 0 0; }
+      to { background-position: -46px 0; }
+    }
+    .loader-text {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      letter-spacing: 0.2px;
+      animation: pulseText 1.6s ease-in-out infinite;
+    }
+    @keyframes pulseText {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* ===== RODAPÉ INSTITUCIONAL ===== */
+    .site-footer {
+      margin-top: auto;
+      padding: 36px 20px 28px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .site-footer .logo { justify-content: center; font-size: 0.85rem; opacity: 0.65; margin-bottom: 8px; }
+    .site-footer .footer-links { margin-top: 6px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .site-footer .footer-links span { cursor: default; }
+    .site-footer .footer-links span:hover { color: var(--text-secondary); }
+
+    /* ===== TRUST BADGES (PRIMEIRO ACESSO) ===== */
+    .trust-row {
+      display: flex;
+      gap: 22px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
       .top-nav { width: 95%; padding: 10px 16px; flex-wrap: wrap; gap: 8px; }
@@ -686,10 +769,11 @@
   <!-- ============================================================== -->
   <div id="view-generator" class="view-section active">
     <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; background:radial-gradient(circle at 50% 30%, rgba(0,102,255,0.18) 0%, transparent 65%);">
-      <div class="logo" style="margin-bottom:32px;"><div class="logo-dot"></div> CARPASS</div>
+      <div class="logo" style="margin-bottom:20px;"><div class="logo-dot"></div> CARPASS</div>
+      <div class="badge badge-gray" style="margin-bottom:16px;">🔐 PAINEL INTERNO DE EMISSÃO DE TAGS</div>
       <div class="glass-panel" style="max-width:500px; width:100%; padding:40px; text-align:center;">
         <h1 style="font-size:2.2rem; font-weight:800; margin-bottom:12px;">Gerar QR Code</h1>
-        <p style="color:var(--text-secondary); margin-bottom:32px;">Crie um QR Code único para o seu veículo.</p>
+        <p style="color:var(--text-secondary); margin-bottom:32px;">Crie um identificador único para gravar em uma tag física (QR ou NFC) e fixar no veículo.</p>
         <button id="generateQrBtn" class="btn-primary" style="width:100%; justify-content:center; font-size:1.1rem; padding:16px;">
           📱 Gerar QR Code
         </button>
@@ -714,6 +798,41 @@
       <div id="publicContent"></div>
     </div>
   </div>
+
+  <!-- ============================================================== -->
+  <!-- ===== VIEW: ACESSO RESTRITO (SEM QR/NFC) ===== -->
+  <!-- ============================================================== -->
+  <div id="view-noaccess" class="view-section">
+    <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; text-align:center; background:radial-gradient(circle at 50% 30%, rgba(0,102,255,0.14) 0%, transparent 65%);">
+      <div class="logo" style="margin-bottom:28px;"><div class="logo-dot"></div> CARPASS</div>
+      <div class="loader-car-wrap">
+        <svg class="loader-car" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+          <path style="fill:var(--accent-electric)" d="M8 40 Q8 24 26 22 L40 22 Q48 10 66 10 L82 10 Q94 10 100 22 L108 22 Q116 22 116 34 L116 40 Z" />
+          <rect style="fill:var(--accent-cyan); opacity:0.85" x="46" y="14" width="34" height="14" rx="4" />
+          <g class="loader-wheel"><circle cx="34" cy="42" r="9" fill="#050505" stroke="#fff" stroke-width="2"/><circle cx="34" cy="42" r="2.5" fill="#fff"/></g>
+          <g class="loader-wheel"><circle cx="94" cy="42" r="9" fill="#050505" stroke="#fff" stroke-width="2"/><circle cx="94" cy="42" r="2.5" fill="#fff"/></g>
+        </svg>
+        <div class="loader-road" style="margin-top:10px;"></div>
+      </div>
+      <h1 style="font-size:1.7rem; font-weight:800; max-width:480px; margin-top:26px;">Este link não pode ser acessado diretamente</h1>
+      <p style="color:var(--text-secondary); max-width:440px; margin-top:12px; font-size:0.95rem;">
+        O Passaporte Digital é ativado através do QR Code ou tag NFC fixada no veículo. Aproxime o celular da tag ou escaneie o código para continuar.
+      </p>
+    </div>
+  </div>
+
+  <!-- ===== RODAPÉ INSTITUCIONAL ===== -->
+  <footer class="site-footer">
+    <div class="logo"><div class="logo-dot"></div> CARPASS</div>
+    <p>© 2026 CarPass · Passaporte Digital do Veículo</p>
+    <div class="footer-links">
+      <span>Termos de Uso</span>
+      <span>·</span>
+      <span>Privacidade</span>
+      <span>·</span>
+      <span>Suporte</span>
+    </div>
+  </footer>
 
   <!-- ============================================================== -->
   <!-- ===== JAVASCRIPT ===== -->
@@ -775,7 +894,7 @@
             text: targetUrl,
             width: 200,
             height: 200,
-            colorDark: "#000000",
+            colorDark: "#0044b3",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
           });
@@ -1018,6 +1137,24 @@
         `;
       }
 
+      // ========== LOADER ANIMADO (CARRO ANDANDO) ==========
+      function carLoaderHTML(message) {
+        return `
+          <div class="loader-scene">
+            <div class="loader-car-wrap">
+              <svg class="loader-car" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+                <path style="fill:var(--accent-electric)" d="M8 40 Q8 24 26 22 L40 22 Q48 10 66 10 L82 10 Q94 10 100 22 L108 22 Q116 22 116 34 L116 40 Z" />
+                <rect style="fill:var(--accent-cyan); opacity:0.85" x="46" y="14" width="34" height="14" rx="4" />
+                <g class="loader-wheel"><circle cx="34" cy="42" r="9" fill="#050505" stroke="#fff" stroke-width="2"/><circle cx="34" cy="42" r="2.5" fill="#fff"/></g>
+                <g class="loader-wheel"><circle cx="94" cy="42" r="9" fill="#050505" stroke="#fff" stroke-width="2"/><circle cx="94" cy="42" r="2.5" fill="#fff"/></g>
+              </svg>
+              <div class="loader-road"></div>
+            </div>
+            <p class="loader-text">${message}</p>
+          </div>
+        `;
+      }
+
       // ========== RENDER PÁGINA PÚBLICA ==========
       async function renderPublic() {
         const params = new URLSearchParams(window.location.search);
@@ -1029,7 +1166,7 @@
           return;
         }
 
-        publicContent.innerHTML = '<div style="text-align:center; padding:60px; color:var(--text-secondary);">Verificando registro...</div>';
+        publicContent.innerHTML = carLoaderHTML('Verificando registro do veículo...');
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         publicView.classList.add('active');
 
@@ -1047,9 +1184,20 @@
           }
 
           const formHTML = `
+            <div class="glass-panel" style="max-width:560px; margin:0 auto 24px; padding:28px 32px; text-align:center;">
+              <div class="badge badge-blue" style="margin-bottom:14px;">🔗 TAG ESCANEADA COM SUCESSO</div>
+              <h2 style="font-size:1.5rem; font-weight:800;">Ative o Passaporte Digital deste Veículo</h2>
+              <p style="color:var(--text-secondary); margin-top:8px; font-size:0.9rem;">
+                Você escaneou o identificador físico fixado no veículo. Complete o cadastro abaixo para começar a registrar manutenções, documentos e fotos com verificação digital.
+              </p>
+              <div class="trust-row">
+                <div class="trust-item">🔒 Dados vinculados só a este veículo</div>
+                <div class="trust-item">✓ Histórico à prova de adulteração</div>
+              </div>
+            </div>
             <div class="form-card">
               <h2>Primeiro Acesso</h2>
-              <p class="subtitle">Este QR Code ainda não está vinculado a um veículo. Selecione os dados do veículo na FIPE e informe seu e-mail.</p>
+              <p class="subtitle">Selecione os dados do veículo na tabela FIPE e informe seu e-mail.</p>
 
               <form id="publicVehicleForm">
                 <div class="form-group">
@@ -1227,6 +1375,13 @@
         // CASO 2: QR Code JÁ CADASTRADO → PAINEL DO VEÍCULO
         // -------------------------------------------------------------
         const v = vehicleData;
+
+        // -------- ATUALIZA TÍTULO E META TAGS (OG) --------
+        document.title = `${v.brand} ${v.name} | CarPass`;
+        $('ogTitle')?.setAttribute('content', `${v.brand} ${v.name} | Passaporte Digital CarPass`);
+        $('ogDescription')?.setAttribute('content', `Histórico verificado de manutenções, documentos e fotos do ${v.brand} ${v.name}.`);
+        if (v.image) $('ogImage')?.setAttribute('content', v.image);
+
         const maintList = (v.maintenances || []).map(m => {
           const info = maintTypeInfo(m.type);
           return `
@@ -1462,6 +1617,10 @@
       });
 
       // ========== INICIALIZAÇÃO ==========
+      // Chave de acesso ao painel interno de emissão de tags.
+      // Troque este valor e use a URL: ?admin=SUACHAVE para acessar o gerador de QR Code.
+      const ADMIN_KEY = 'aclive2026';
+
       function init() {
         $('generateQrBtn')?.addEventListener('click', generateAndShowQR);
         $('copyGeneratedLinkBtn')?.addEventListener('click', copyGeneratedLink);
@@ -1473,11 +1632,14 @@
         });
 
         const params = new URLSearchParams(window.location.search);
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+
         if (params.has('id')) {
           renderPublic();
-        } else {
-          document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        } else if (params.get('admin') === ADMIN_KEY) {
           generatorView.classList.add('active');
+        } else {
+          $('view-noaccess').classList.add('active');
         }
       }
 
