@@ -106,6 +106,12 @@
       transform: translateY(-2px) scale(1.02);
       box-shadow: 0 8px 30px rgba(0,102,255,0.6);
     }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
     .btn-secondary {
       background: rgba(255,255,255,0.05);
       color: var(--text-primary);
@@ -727,11 +733,15 @@
       const toastMsg = $('toast-message');
 
       // ========== TOAST ==========
-      function triggerToast(msg) {
+      function triggerToast(msg, isError = false) {
         toastMsg.innerText = msg;
+        toast.style.borderColor = isError ? '#ff4444' : 'var(--accent-electric)';
         toast.classList.add('show');
         clearTimeout(toast._timer);
-        toast._timer = setTimeout(() => toast.classList.remove('show'), 3500);
+        toast._timer = setTimeout(() => {
+          toast.classList.remove('show');
+          toast.style.borderColor = 'var(--accent-electric)';
+        }, 5000);
       }
 
       // ========== GERAR UUID ==========
@@ -800,21 +810,19 @@
         const uuid = params.get('id');
 
         if (!uuid) {
-          // Se não tiver UUID, redirecionar para o gerador
           document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
           generatorView.classList.add('active');
           return;
         }
 
-        // Buscar veículo pelo UUID
         const vehicleData = await loadVehicleByUuid(uuid);
         const hasVehicle = vehicleData !== null;
 
         if (!hasVehicle) {
-          // UUID não registrado → exibir tela de cadastro
+          // UUID não registrado → exibir tela de cadastro com conta + veículo
           publicContent.innerHTML = `
             <div class="glass-panel" style="max-width:500px; margin:0 auto; padding:40px;">
-              <h2 style="font-size:1.6rem; font-weight:700; text-align:center; margin-bottom:24px;">Cadastre seu veículo</h2>
+              <h2 style="font-size:1.6rem; font-weight:700; text-align:center; margin-bottom:8px;">Cadastre seu veículo</h2>
               <p style="color:var(--text-secondary); text-align:center; margin-bottom:24px;">Este QR Code ainda não foi registrado. Crie sua conta e cadastre seu veículo.</p>
               <form id="publicVehicleForm">
                 <div style="margin-bottom:16px;">
@@ -842,15 +850,20 @@
                 <input type="text" id="publicVTransmission" placeholder="PDK 7 marchas" />
                 <label>URL da Imagem (opcional)</label>
                 <input type="text" id="publicVImage" placeholder="https://exemplo.com/foto.jpg" />
-                <button type="submit" class="btn-primary" style="width:100%; margin-top:20px;">Cadastrar</button>
+                <button type="submit" id="publicSubmitBtn" class="btn-primary" style="width:100%; margin-top:20px;">Cadastrar</button>
               </form>
             </div>
           `;
 
-          // Evento do formulário de cadastro
           const form = $('publicVehicleForm');
+          const submitBtn = $('publicSubmitBtn');
+
           form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            // Desabilitar botão para evitar múltiplos cliques
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Cadastrando...';
+
             const email = $('publicAuthEmail').value.trim();
             const password = $('publicAuthPassword').value.trim();
             const name = $('publicVName').value.trim();
@@ -863,7 +876,9 @@
             const image = $('publicVImage').value.trim();
 
             if (!email || !password || !name || !brand) {
-              triggerToast('Preencha e-mail, senha, nome e marca do veículo.');
+              triggerToast('Preencha e-mail, senha, nome e marca do veículo.', true);
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Cadastrar';
               return;
             }
 
@@ -873,8 +888,17 @@
                 email,
                 password,
               });
-              if (signUpError) throw new Error(signUpError.message);
-              if (!userData.user) throw new Error('Erro ao criar usuário.');
+
+              if (signUpError) {
+                if (signUpError.status === 429) {
+                  throw new Error('Muitas tentativas. Aguarde alguns minutos e tente novamente.');
+                }
+                throw new Error(signUpError.message);
+              }
+
+              if (!userData.user) {
+                throw new Error('Erro ao criar usuário. Verifique se o e-mail já está cadastrado.');
+              }
 
               // 2. Inserir veículo com o UUID
               const { error: insertError } = await supabase
@@ -891,13 +915,19 @@
                   transmission,
                   image,
                 }]);
+
               if (insertError) throw new Error(insertError.message);
 
               triggerToast('Cadastro realizado com sucesso!');
               // Recarregar a página pública para mostrar o veículo
-              renderPublic();
+              setTimeout(() => {
+                window.location.reload();
+              }, 1500);
+
             } catch (err) {
-              triggerToast('Erro: ' + err.message);
+              triggerToast('Erro: ' + err.message, true);
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Cadastrar';
             }
           });
 
@@ -912,7 +942,7 @@
           return;
         }
 
-        // UUID já registrado → mostrar painel do veículo (sem login)
+        // UUID já registrado → mostrar painel do veículo
         const v = vehicleData;
         const maint = (v.maintenances || []).map(m => `
           <div class="timeline-node">
@@ -1007,7 +1037,7 @@
             place: $('mPlace').value.trim(),
           };
           if (!data.date || !data.description) {
-            triggerToast('Preencha data e descrição.');
+            triggerToast('Preencha data e descrição.', true);
             return;
           }
           try {
@@ -1017,7 +1047,7 @@
             closeModal('maintenanceFormModal');
             renderPublic(); // recarrega
           } catch (err) {
-            triggerToast('Erro: ' + err.message);
+            triggerToast('Erro: ' + err.message, true);
           }
         };
 
@@ -1070,12 +1100,10 @@
         // Verificar se há ?id= na URL
         const params = new URLSearchParams(window.location.search);
         if (params.has('id')) {
-          // Mostrar página pública
           document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
           publicView.classList.add('active');
           renderPublic();
         } else {
-          // Mostrar gerador
           document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
           generatorView.classList.add('active');
         }
